@@ -7,6 +7,7 @@ from exeptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNe
     GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError
 from src.database.services.auxiliary import get_user_email_by_question_id
 from src.database.services.email_service import send_answer_email
+from src.services.email_service import send_answer_email
 from src.models.models import Questions, Answers
 from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema
 
