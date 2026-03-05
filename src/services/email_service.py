@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 
 from exeptions import SendEmailError
 
+# TODO вынести параметры в конфиг, обновить код
+
+
 load_dotenv()
 async def send_answer_email(user_email: str, message: str):
     fromaddr = "alekseyelcha07@mail.ru"
