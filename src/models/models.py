@@ -65,4 +65,4 @@ class MailVerification(Base):
     creation_time: Mapped[time] = mapped_column(Time, server_default=text("CURRENT_TIME"))
     expiration_date: Mapped[date] = mapped_column(Date, nullable=False)
     expiration_time: Mapped[time] = mapped_column(Date, nullable=False)
-
+    was_used: Mapped[bool] = mapped_column(nullable=False, default=False)
