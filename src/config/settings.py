@@ -4,6 +4,7 @@ from pydantic_settings import  BaseSettings, SettingsConfigDict
 
 from src.config.app import AppConfig
 from src.config.db import DatabaseConfig
+from src.config.jwt import AuthJWT
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,6 +13,6 @@ class Settings(BaseSettings):
 
     app: AppConfig = AppConfig()
     db: DatabaseConfig = DatabaseConfig()
-    auth_jwt = AuthJWT = AuthJWT()
+    auth_jwt: AuthJWT = AuthJWT()
 
 settings = Settings()
