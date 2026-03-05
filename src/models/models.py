@@ -53,7 +53,7 @@ class Answers(Base):
 
 
 class MailVerification(Base):
-    __tablename__ = "mail_verification"
+    __tablename__ = "email_verification"
 
     id: Mapped[uuid.UUID] = mapped_column(
         SQLAUUID(as_uuid=True),
