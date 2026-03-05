@@ -52,7 +52,7 @@ class Answers(Base):
     )
 
 
-class MailVerification(Base):
+class EmailVerification(Base):
     __tablename__ = "email_verification"
 
     id: Mapped[uuid.UUID] = mapped_column(
