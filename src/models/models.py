@@ -50,3 +50,19 @@ class Answers(Base):
     question: Mapped["Questions"] = relationship(
         back_populates="answers"
     )
+
+
+class MailVerification(Base):
+    __tablename__ = "mail_verification"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        SQLAUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()")
+    )
+    email: Mapped[str] = mapped_column(nullable=False)
+    creation_date: Mapped[date] = mapped_column(Date, server_default=text("CURRENT_DATE"))
+    creation_time: Mapped[time] = mapped_column(Time, server_default=text("CURRENT_TIME"))
+    expiration_date: Mapped[date] = mapped_column(Date, nullable=False)
+    expiration_time: Mapped[time] = mapped_column(Date, nullable=False)
+
