@@ -1,13 +1,15 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exeptions import CreateNewQuestionError
+from src.auth.code_generator import generate_auth_code_and_and_to_db
+from src.auth.utils import validate_auth_user
 from src.database.crud.questions import create_new_question
 from src.database.db import get_session
 from src.models.models import Questions
-from src.schemas.schemas import UserSchema, NewQuestionSchema
+from src.schemas.schemas import UserSchema, NewQuestionSchema, UserAuthSchema
 
 router = APIRouter(
     prefix="/questions",
@@ -29,3 +31,10 @@ async def create_question(
     return {
         "message": "Вопрос успешно создан."
     }
+
+
+@router.post("/test")
+async def test(user: UserAuthSchema,
+               session: Annotated[AsyncSession, Depends(get_session)]):
+    res = await validate_auth_user(user, session)
+    return res
