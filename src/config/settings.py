@@ -7,8 +7,6 @@ from src.config.business import Business
 from src.config.db import DatabaseConfig
 from src.config.jwt import AuthJWT
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict()
 
