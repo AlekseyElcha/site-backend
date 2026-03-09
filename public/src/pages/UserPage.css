@@ -1,0 +1,136 @@
+.user-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+}
+
+.page-header {
+  background: var(--bg-primary);
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.new-button {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.new-button:hover {
+  background: var(--primary-hover);
+}
+
+.logout-button {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logout-button:hover {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+.form-section {
+  padding: 1rem 2rem;
+}
+
+.page-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  overflow: hidden;
+}
+
+.sidebar {
+  background: var(--bg-primary);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.main-content {
+  background: var(--bg-primary);
+  border-radius: 0.5rem;
+  overflow-y: auto;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 1024px) {
+  .page-content {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+  
+  .new-button,
+  .logout-button {
+    flex: 1;
+  }
+  
+  .page-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  
+  .sidebar {
+    max-height: 300px;
+  }
+}

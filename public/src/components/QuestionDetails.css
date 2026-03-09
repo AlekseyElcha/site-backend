@@ -1,0 +1,137 @@
+.question-details {
+  background: var(--bg-primary);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.question-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.question-details-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.question-details-status {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  color: white;
+  font-weight: 500;
+}
+
+.question-details-info {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 100px;
+}
+
+.info-value {
+  color: var(--text-primary);
+}
+
+.question-details-message {
+  margin-bottom: 1.5rem;
+}
+
+.message-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem 0;
+}
+
+.message-text {
+  color: var(--text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.question-details-answers {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.answers-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.no-answers {
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 0;
+}
+
+.answers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.answer-item {
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.answer-header {
+  margin-bottom: 0.5rem;
+}
+
+.answer-date {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.answer-message {
+  color: var(--text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .question-details {
+    padding: 1rem;
+  }
+  
+  .question-details-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .info-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .info-label {
+    min-width: auto;
+  }
+}

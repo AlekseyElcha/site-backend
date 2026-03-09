@@ -1,0 +1,40 @@
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  color: var(--error-color);
+  margin-bottom: 1rem;
+}
+
+.error-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.error-text {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--error-color);
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.error-close:hover {
+  opacity: 0.7;
+}
