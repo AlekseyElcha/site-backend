@@ -1,18 +1,12 @@
-from datetime import time, date
+from datetime import datetime
 
 
 def has_expired(
-        current_date: date,
-        current_time: time,
-        expiration_date: date,
-        expiration_time: time,
+        current_datetime: datetime,
+        expiration_datetime: datetime
 ):
-    if current_date < expiration_date:
+    if current_datetime < expiration_datetime:
         return False
-    elif current_date == expiration_date:
-        if current_time < expiration_time:
-            return False
-        else:
-            return True
-    return True
+    else:
+        return True
 
