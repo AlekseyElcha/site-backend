@@ -32,9 +32,3 @@ async def create_question(
         "message": "Вопрос успешно создан."
     }
 
-
-@router.post("/test")
-async def test(user: UserAuthSchema,
-               session: Annotated[AsyncSession, Depends(get_session)]):
-    res = await validate_auth_user(user, session)
-    return res
