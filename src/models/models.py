@@ -1,12 +1,26 @@
 import uuid
 from datetime import date, time
-from sqlalchemy import text, Date, Time, ForeignKey
+
+from pydantic_core.core_schema import nullable_schema
+from sqlalchemy import text, Date, Time, ForeignKey, DateTime, null
 from sqlalchemy.dialects.postgresql import UUID as SQLAUUID
 from sqlalchemy.orm import mapped_column, Mapped, DeclarativeBase, relationship
 from typing import List
 
 class Base(DeclarativeBase):
     pass
+
+
+class AllUsers(Base):
+    __tablename__ = "users"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        SQLAUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    email: Mapped[str] = mapped_column(nullable=False)
+    role: Mapped[str] = mapped_column(nullable=False, default="user")
 
 
 class Questions(Base):
@@ -61,8 +75,7 @@ class EmailVerification(Base):
         server_default=text("gen_random_uuid()")
     )
     email: Mapped[str] = mapped_column(nullable=False)
-    creation_date: Mapped[date] = mapped_column(Date, server_default=text("CURRENT_DATE"))
-    creation_time: Mapped[time] = mapped_column(Time, server_default=text("CURRENT_TIME"))
-    expiration_date: Mapped[date] = mapped_column(Date, nullable=False)
-    expiration_time: Mapped[time] = mapped_column(Date, nullable=False)
+    code: Mapped[str] = mapped_column(nullable=False)
+    creation: Mapped[date] = mapped_column(DateTime, nullable=False)
+    expiration: Mapped[time] = mapped_column(DateTime, nullable=False)
     was_used: Mapped[bool] = mapped_column(nullable=False, default=False)
