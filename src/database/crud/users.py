@@ -14,8 +14,7 @@ async def get_user_role_if_user_exists_else_create_new_user(user_email: str, ses
         if not data:
             await create_new_user(user=UserAddSchema(email=user_email, role="user"), session=session)
         else:
-            role = data.role
-            return role
+            return "user"
     except:
         raise BasicOperationDatabaseError
 
