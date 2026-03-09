@@ -29,3 +29,27 @@ class SendEmailError(QuestionsBaseException):
 class UpdateQuestionStatusError(QuestionsBaseException):
     pass
 
+
+class CreateNewEmailVerificationCodeError(QuestionsBaseException):
+    pass
+
+
+class AddNewEmailVerificationCodeToDBError(QuestionsBaseException):
+    pass
+
+
+class BasicOperationDatabaseError(QuestionsBaseException):
+    pass
+
+
+class TokenHasExpired(QuestionsBaseException):
+    pass
+
+
+class TokenAlreadyUsed(QuestionsBaseException):
+    pass
+
+
+class DecodeTokenError(QuestionsBaseException):
+    pass
+
