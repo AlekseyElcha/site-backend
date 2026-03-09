@@ -1,5 +1,6 @@
 from email.policy import HTTP
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.params import Body
@@ -8,9 +9,14 @@ from sqlalchemy import True_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exeptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
-    SendEmailError, UpdateQuestionStatusError
-from src.database.crud.questions import get_all_questions_from_db, create_new_answer_and_send_email, \
-    change_question_status
+    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError
+from src.database.crud.questions import (
+    get_all_questions_from_db,
+    create_new_answer_and_send_email,
+    change_question_status,
+    get_answers_for_questions,
+    get_answers_for_question_by_uuid,
+)
 from src.database.db import get_session
 from src.models.models import Answers
 from src.schemas.schemas import NewAnswerSchema
@@ -30,6 +36,32 @@ async def get_all_questions(session: Annotated[AsyncSession, Depends(get_session
             detail="Ошибка при получении списка вопросов.")
     return data
 
+
+@router.get("/answers_for_all_questions")
+async def get_all_answers_for_all_questions(session: Annotated[AsyncSession, Depends(get_session)]):
+    try:
+        data = await get_answers_for_questions(session=session)
+    except BasicOperationDatabaseError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при работе с базой данных"
+        )
+    return data
+
+
+@router.get("/answers_for_question/{question_id}")
+async def get_all_answers_for_all_questions(
+        question_id: UUID,
+        session: Annotated[AsyncSession, Depends(get_session)]
+):
+    try:
+        data = await get_answers_for_question_by_uuid(question_uuid=question_id, session=session)
+    except BasicOperationDatabaseError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при работе с базой данных"
+        )
+    return data
 
 @router.put("/change_question_status")
 async def change_question_status_manually(

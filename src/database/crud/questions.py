@@ -4,7 +4,8 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exeptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNewAnswerError, \
-    GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError
+    GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError, \
+    BasicOperationDatabaseError
 from src.database.services.auxiliary import get_user_email_by_question_id
 from src.services.email_service import send_answer_email
 from src.models.models import Questions, Answers
@@ -79,3 +80,23 @@ async def change_question_status(
         raise UpdateQuestionStatusError
     await session.commit()
     return True
+
+
+async def get_answers_for_questions(session: AsyncSession):
+    query = select(Answers)
+    try:
+        data = await session.execute(query)
+        result = data.scalars().all()
+        return result
+    except:
+        raise BasicOperationDatabaseError
+
+
+async def get_answers_for_question_by_uuid(question_uuid: str, session: AsyncSession):
+    query = select(Answers).where(Answers.question_id == question_uuid)
+    try:
+        data = await session.execute(query)
+        result = data.scalars().all()
+        return result
+    except:
+        raise BasicOperationDatabaseError
