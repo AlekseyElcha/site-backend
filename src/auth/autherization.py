@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Form, HTTPException, status, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import BasicOperationDatabaseError
+from exeptions import BasicOperationDatabaseError, SendEmailError
 from src.auth.code_generator import generate_auth_code_and_and_to_db
 from src.auth.utils import validate_auth_user
 from src.config.settings import settings
@@ -13,6 +13,7 @@ from src.database.crud.auth_codes import (
 from src.database.crud.users import get_user_role_if_user_exists_else_create_new_user
 from src.database.db import get_session
 from src.schemas.schemas import TokenInfo
+from src.services.email_service import send_auth_code
 from src.services.token_service import (
     create_access_token,
     decode_jwt,
@@ -26,6 +27,13 @@ router = APIRouter(
 @router.post("/get_auth_code")
 async def get_auth_code(session: Annotated[AsyncSession, Depends(get_session)], email: str = Form()):
     code = await generate_auth_code_and_and_to_db(email=email, session=session)
+    try:
+        await send_auth_code(user_email=email, auth_code=code)
+    except SendEmailError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Произошла ошибка при отправке email с кодом для входа. Повторите попытку позже."
+        )
     return code
 
 
