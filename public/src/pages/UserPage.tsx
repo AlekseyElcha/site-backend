@@ -24,9 +24,23 @@ export function UserPage() {
     try {
       setIsLoading(true)
       setError(null)
-      const allQuestions = await apiService.getAllQuestions()
+      
+      // Загружаем вопросы и ответы параллельно
+      const [allQuestions, allAnswers] = await Promise.all([
+        apiService.getAllQuestions(),
+        apiService.getAllAnswers()
+      ])
+      
+      // Фильтруем вопросы пользователя
       const userQuestions = allQuestions.filter(q => q.email === user?.sub)
-      setQuestions(userQuestions)
+      
+      // Объединяем вопросы с их ответами
+      const questionsWithAnswers = userQuestions.map(question => ({
+        ...question,
+        answers: allAnswers.filter(answer => answer.question_id === question.id)
+      }))
+      
+      setQuestions(questionsWithAnswers)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки обращений')
     } finally {
@@ -49,6 +63,14 @@ export function UserPage() {
       
       await loadQuestions()
       setShowForm(false)
+      
+      // Обновляем выбранное обращение, если оно было выбрано
+      if (selectedQuestion) {
+        const updated = questions.find(q => q.id === selectedQuestion.id)
+        if (updated) {
+          setSelectedQuestion(updated)
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка создания обращения')
       throw err
