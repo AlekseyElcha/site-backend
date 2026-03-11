@@ -1,1 +1,8 @@
-*.py linguist-language=Python
+# Python - единственный detectable язык
+*.py linguist-detectable=true linguist-language=Python
+
+# ВСЁ остальное - generated (полностью исключено из статистики)
+* linguist-generated
+
+# Но Python файлы переопределяем обратно
+*.py linguist-generated=false linguist-detectable=true linguist-language=Python
