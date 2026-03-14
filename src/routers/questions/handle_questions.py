@@ -38,7 +38,9 @@ async def get_all_questions(session: Annotated[AsyncSession, Depends(get_session
 
 
 @router.get("/answers_for_all_questions")
-async def get_all_answers_for_all_questions(session: Annotated[AsyncSession, Depends(get_session)]):
+async def get_all_answers_for_all_questions(
+        session: Annotated[AsyncSession, Depends(get_session)]
+):
     try:
         data = await get_answers_for_questions(session=session)
     except BasicOperationDatabaseError:
