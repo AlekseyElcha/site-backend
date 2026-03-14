@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from pydantic import BaseModel, EmailStr
 from datetime import date, time, datetime
 
@@ -15,11 +17,13 @@ class NewQuestionSchema(BaseModel):
     surname: str
     address: str
     message: str
+    files: Optional[List[str]] = None
 
 
 class NewAnswerSchema(BaseModel):
     message: str
     question_id: str
+    files: Optional[List[str]] = None
 
 
 class NewEmailVerificationCode(BaseModel):
@@ -27,7 +31,6 @@ class NewEmailVerificationCode(BaseModel):
     code: str
     creation: datetime
     expiration: datetime
-
 
 
 class TokenInfo(BaseModel):
