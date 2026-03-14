@@ -32,7 +32,7 @@ export function QuestionCard({ question, onClick, isSelected }: QuestionCardProp
       <div className="question-card-info">
         <p className="question-card-email">{question.email}</p>
         <p className="question-card-date">
-          {formatDate(question.date)} {formatTime(question.time)}
+          {formatDate(question.date, question.time)} {formatTime(question.date, question.time)}
         </p>
       </div>
       

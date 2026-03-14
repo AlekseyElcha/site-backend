@@ -41,6 +41,14 @@ export function UserPage() {
       }))
       
       setQuestions(questionsWithAnswers)
+      
+      // Обновляем выбранное обращение, если оно было выбрано
+      if (selectedQuestion) {
+        const updated = questionsWithAnswers.find(q => q.id === selectedQuestion.id)
+        if (updated) {
+          setSelectedQuestion(updated)
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки обращений')
     } finally {
@@ -50,27 +58,23 @@ export function UserPage() {
 
   useEffect(() => {
     loadQuestions()
+    
+    // Обновляем данные каждые 30 секунд
+    const interval = setInterval(() => {
+      loadQuestions()
+    }, 30000)
+    
+    return () => clearInterval(interval)
   }, [user])
 
-  const handleCreateQuestion = async (form: NewQuestionForm) => {
+  const handleCreateQuestion = async (form: NewQuestionForm, files: File[]) => {
     try {
       setIsSubmitting(true)
       setError(null)
-      await apiService.createQuestion(form)
-      
-      // Показываем успешное уведомление
+      await apiService.createQuestion(form, files)
       setSuccessMessage('Обращение успешно создано!')
-      
       await loadQuestions()
       setShowForm(false)
-      
-      // Обновляем выбранное обращение, если оно было выбрано
-      if (selectedQuestion) {
-        const updated = questions.find(q => q.id === selectedQuestion.id)
-        if (updated) {
-          setSelectedQuestion(updated)
-        }
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка создания обращения')
       throw err

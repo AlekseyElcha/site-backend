@@ -39,7 +39,7 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
         <div className="info-row">
           <span className="info-label">Дата:</span>
           <span className="info-value">
-            {formatDate(question.date)} {formatTime(question.time)}
+            {formatDate(question.date, question.time)} {formatTime(question.date, question.time)}
           </span>
         </div>
       </div>
@@ -62,7 +62,7 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
               <div key={answer.id} className="answer-item">
                 <div className="answer-header">
                   <span className="answer-date">
-                    {formatDate(answer.date)} {formatTime(answer.time)}
+                    {formatDate(answer.date, answer.time)} {formatTime(answer.date, answer.time)}
                   </span>
                 </div>
                 <p className="answer-message">{answer.message}</p>

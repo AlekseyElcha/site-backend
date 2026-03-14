@@ -4,7 +4,7 @@ class APIService {
   private baseURL: string
 
   constructor() {
-    this.baseURL = ''  // Прокси настроен в vite.config.ts
+    this.baseURL = ''  // Прокси настроен в vite.credentials.ts
   }
 
   // Обработка ответа от API
@@ -58,12 +58,27 @@ class APIService {
   }
 
   // Questions endpoints
-  async createQuestion(question: NewQuestionForm): Promise<void> {
+  async createQuestion(question: NewQuestionForm, files?: File[]): Promise<void> {
+    // Если нет файлов — отправляем как JSON
+    if (!files || files.length === 0) {
+      const response = await fetch(`${this.baseURL}/questions/create_question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(question)
+      })
+      return this.handleResponse<void>(response)
+    }
+
+    // Если есть файлы — отправляем multipart с question как JSON-строкой
+    const formData = new FormData()
+    formData.append('question', JSON.stringify(question))
+    files.forEach(file => formData.append('files', file))
+
     const response = await fetch(`${this.baseURL}/questions/create_question`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(question)
+      body: formData
     })
     await this.handleResponse<void>(response)
   }

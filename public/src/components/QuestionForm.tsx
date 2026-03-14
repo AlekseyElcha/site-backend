@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { NewQuestionForm } from '../types'
 import { validateQuestionForm, isValidEmail } from '../utils/validation'
 import './QuestionForm.css'
 
 interface QuestionFormProps {
-  onSubmit: (form: NewQuestionForm) => Promise<void>
+  onSubmit: (form: NewQuestionForm, files: File[]) => Promise<void>
   isLoading: boolean
   userEmail: string
 }
@@ -19,6 +19,8 @@ export function QuestionForm({ onSubmit, isLoading, userEmail }: QuestionFormPro
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [files, setFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Обновляем email при изменении userEmail
   useEffect(() => {
@@ -67,10 +69,12 @@ export function QuestionForm({ onSubmit, isLoading, userEmail }: QuestionFormPro
       return
     }
     
-    await onSubmit(form)
+    await onSubmit(form, files)
     setForm({ name: '', surname: '', email: userEmail, address: '', message: '' })
     setErrors({})
     setTouched({})
+    setFiles([])
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const isFormValid = validateQuestionForm(form).isValid
@@ -140,6 +144,24 @@ export function QuestionForm({ onSubmit, isLoading, userEmail }: QuestionFormPro
           className={errors.message && touched.message ? 'error' : ''}
         />
         {errors.message && touched.message && <span className="error-text">{errors.message}</span>}
+      </div>
+
+      <div className="form-group">
+        <label className="file-label">Прикрепить файлы (необязательно)</label>
+        <input
+          type="file"
+          multiple
+          ref={fileInputRef}
+          onChange={(e) => setFiles(Array.from(e.target.files || []))}
+          className="file-input"
+        />
+        {files.length > 0 && (
+          <ul className="file-list">
+            {files.map((f, i) => (
+              <li key={i}>{f.name}</li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <button 
