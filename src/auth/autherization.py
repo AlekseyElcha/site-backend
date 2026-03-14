@@ -12,7 +12,7 @@ from src.database.crud.auth_codes import (
 )
 from src.database.crud.users import get_user_role_if_user_exists_else_create_new_user
 from src.database.db import get_session
-from src.schemas.schemas import TokenInfo
+from src.schemas.schemas import UserAuthSchema
 from src.services.email_service import send_auth_code
 from src.services.token_service import (
     create_access_token,
@@ -40,22 +40,29 @@ async def get_auth_code(session: Annotated[AsyncSession, Depends(get_session)], 
 @router.post("/login")
 async def login(
     response: Response,
-    user_email: str = Depends(validate_auth_user),
+    user_data: UserAuthSchema = Depends(validate_auth_user),
     session: AsyncSession = Depends(get_session),
 ):
-    if not user_email:
+    if not user_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
-    user_role = await get_user_role_if_user_exists_else_create_new_user(user_email=user_email, session=session)
+    user_role = await get_user_role_if_user_exists_else_create_new_user(
+        user_email=user_data.email,
+        session=session
+    )
     try:
-        await change_auth_code_usage_status_by_user_email(email=user_email, used=True, session=session)
+        await change_auth_code_usage_status_by_user_email(
+            user_data=user_data,
+            used=True,
+            session=session,
+        )
     except BasicOperationDatabaseError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Произошла ошибка сервера.",
         )
-    access_token = create_access_token(user_email, user_role)
+    access_token = create_access_token(user_data.email, user_role)
     response.set_cookie(
         key=settings.auth_jwt.access_cookie_name,
         value=access_token,

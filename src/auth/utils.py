@@ -31,7 +31,7 @@ async def validate_auth_user(
     exp = data.expiration
     has_exp = has_expired(now, exp)
     if not has_exp:
-        return user_data.email
+        return user_data
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
