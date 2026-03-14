@@ -53,3 +53,7 @@ class TokenAlreadyUsed(QuestionsBaseException):
 class DecodeTokenError(QuestionsBaseException):
     pass
 
+
+class S3OperationsError(QuestionsBaseException):
+    pass
+
