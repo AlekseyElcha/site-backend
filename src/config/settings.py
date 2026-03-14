@@ -8,6 +8,7 @@ from src.config.db import DatabaseConfig
 from src.config.email import EmailServiceConfig
 from src.config.jwt import AuthJWT
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict()
 

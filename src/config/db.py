@@ -14,3 +14,7 @@ class DatabaseConfig(BaseModel):
     @property
     def async_url(self):
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db_name}"
+
+    @property
+    def sync_url(self):
+        return f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db_name}"
