@@ -1,8 +1,6 @@
 import uuid
 from datetime import date, time
-
-from pydantic_core.core_schema import nullable_schema
-from sqlalchemy import text, Date, Time, ForeignKey, DateTime, null
+from sqlalchemy import text, Date, Time, ForeignKey, DateTime, ARRAY, String
 from sqlalchemy.dialects.postgresql import UUID as SQLAUUID
 from sqlalchemy.orm import mapped_column, Mapped, DeclarativeBase, relationship
 from typing import List
@@ -43,6 +41,7 @@ class Questions(Base):
         back_populates="question",
         cascade="all, delete-orphan"
     )
+    files: Mapped[List[str]] = mapped_column(ARRAY(String))
 
 
 class Answers(Base):
@@ -64,6 +63,7 @@ class Answers(Base):
     question: Mapped["Questions"] = relationship(
         back_populates="answers"
     )
+    files: Mapped[List[str]] = mapped_column(ARRAY(String))
 
 
 class EmailVerification(Base):
