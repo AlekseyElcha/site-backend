@@ -41,7 +41,7 @@ class Questions(Base):
         back_populates="question",
         cascade="all, delete-orphan"
     )
-    files: Mapped[List[str]] = mapped_column(ARRAY(String))
+    files: Mapped[List[str]] = mapped_column(ARRAY(String), default=[])
 
 
 class Answers(Base):
