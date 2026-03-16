@@ -27,3 +27,4 @@ app.include_router(router=handle_questions_router)
 app.include_router(router=auth_router)
 
 # TODO передалать нейминг файлов при загрузке (время + название от абонента + уникальная последовательность)
+# TODO сделать оповещение на основную почту о создании пользователем нового обращения
