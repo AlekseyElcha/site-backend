@@ -24,6 +24,7 @@ async def create_new_question(
         email=question.email,
         address=question.address,
         message=question.message,
+        files=question.files,
     )
     session.add(new_question)
     try:

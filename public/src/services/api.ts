@@ -59,30 +59,23 @@ class APIService {
 
   // Questions endpoints
   async createQuestion(question: NewQuestionForm, files?: File[]): Promise<void> {
-    // Если нет файлов — отправляем как JSON
-    if (!files || files.length === 0) {
-      const response = await fetch(`${this.baseURL}/questions/create_question`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(question)
-      })
-      return this.handleResponse<void>(response)
-    }
+  const formData = new FormData();
+  formData.append("question", JSON.stringify(question));
 
-    // Если есть файлы — отправляем multipart с question как JSON-строкой
-    const formData = new FormData()
-    formData.append('question', JSON.stringify(question))
-    files.forEach(file => formData.append('files', file))
-
-    const response = await fetch(`${this.baseURL}/questions/create_question`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData
-    })
-    await this.handleResponse<void>(response)
+  if (files && files.length > 0) {
+    files.forEach(file => formData.append("files", file));
   }
 
+  const response = await fetch(`${this.baseURL}/questions/create_question`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData
+  });
+
+  return this.handleResponse<void>(response);
+}
+
+    // Если есть файлы — отправляем multipart с question как JSON-строкой
   async getAllQuestions(): Promise<Question[]> {
     const response = await fetch(`${this.baseURL}/handle_questions/all_questions`, {
       method: 'GET',
