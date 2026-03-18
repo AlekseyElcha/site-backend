@@ -64,4 +64,5 @@ async def upload_multiple_files(
         "message": f"Загружено {len(successful)} из {len(files)} файлов",
         "uploaded": successful,
         "failed": failed if failed else None,
+        "file_names": filenames,
     }

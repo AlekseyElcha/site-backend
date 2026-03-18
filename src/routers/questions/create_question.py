@@ -29,24 +29,32 @@ async def create_question(
         files: Optional[List[UploadFile]] = File(None),
 ):
     question_data = NewQuestionSchema.model_validate_json(question)
-    try:
-        question_id = await create_new_question(question_data, session)
-    except CreateNewQuestionError:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Произошла ошибка при создании вопроса.",
-        )
-    if files:
-        try:
-            await upload_multiple_files(
-                files=files,
-                question_uuid=question_id,
-            )
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Ошибка при загрузке!"
-            )
+    # try:
+    await create_new_question(question_data, session)
+    # except S3OperationsError:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         detail="Произошла ошибка при загрузке файлов."
+    #     )
+    # except CreateNewQuestionError:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         detail="Произошла ошибка при создании вопроса.",
+    #     )
+
+
+
+    # if files:
+    #     try:
+    #         await upload_multiple_files(
+    #             files=files,
+    #             question_uuid=question_id,
+    #         )
+    #     except Exception as e:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #             detail="Ошибка при загрузке!"
+    #         )
     return {
         "message": "Вопрос успешно создан."
     }

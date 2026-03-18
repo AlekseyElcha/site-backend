@@ -1,4 +1,5 @@
 from typing import Optional, List
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 from datetime import date, time, datetime
@@ -12,12 +13,13 @@ class UserSchema(BaseModel):
 
 
 class NewQuestionSchema(BaseModel):
+    id: UUID
     name: str
     email: EmailStr
     surname: str
     address: str
     message: str
-    files: Optional[List[str]] = None
+    # files: Optional[List[str]] = None
 
 
 class NewAnswerSchema(BaseModel):
