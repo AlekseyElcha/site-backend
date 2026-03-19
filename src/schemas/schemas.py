@@ -13,13 +13,12 @@ class UserSchema(BaseModel):
 
 
 class NewQuestionSchema(BaseModel):
-    id: UUID
     name: str
     email: EmailStr
     surname: str
     address: str
     message: str
-    # files: Optional[List[str]] = None
+    files: Optional[List[str]] = None
 
 
 class NewAnswerSchema(BaseModel):
