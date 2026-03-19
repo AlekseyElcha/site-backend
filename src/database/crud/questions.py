@@ -7,9 +7,8 @@ from datetime import time, timezone
 
 from exeptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNewAnswerError, \
     GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError, \
-    BasicOperationDatabaseError, S3OperationsError
+    BasicOperationDatabaseError
 from src.database.services.auxiliary import get_user_email_by_question_id
-from src.s3.operations import upload_multiple_files
 from src.services.email_service import send_answer_email
 from src.models.models import Questions, Answers
 from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema
@@ -19,19 +18,13 @@ async def create_new_question(
         question: NewQuestionSchema,
         session: AsyncSession,
 ):
-    try:
-        await upload_multiple_files(question, session)
-    except:
-        raise S3OperationsError
-
     new_question = Questions(
-        id=question.id,
         name=question.name,
         surname=question.surname,
         email=question.email,
         address=question.address,
         message=question.message,
-        files=question.files if question.files else [],
+        files=question.files,
     )
     session.add(new_question)
     try:

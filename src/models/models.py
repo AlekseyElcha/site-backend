@@ -23,7 +23,12 @@ class AllUsers(Base):
 
 class Questions(Base):
     __tablename__ = "questions"
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, nullable=False)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        SQLAUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()")
+    )
     date: Mapped[date] = mapped_column(Date, server_default=text("CURRENT_DATE"))
     time: Mapped[time] = mapped_column(Time, server_default=text("CURRENT_TIME"))
     name: Mapped[str] = mapped_column(nullable=False)
@@ -36,7 +41,7 @@ class Questions(Base):
         back_populates="question",
         cascade="all, delete-orphan"
     )
-    files: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=False, server_default='{}')
+    files: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=True)
 
 
 class Answers(Base):

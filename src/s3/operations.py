@@ -30,12 +30,12 @@ async def upload_single_file(file: UploadFile):
             "filename": file.filename,
             "message": "Объём превышает допустимый."
         }
-    file_uuid = uuid.uuid4()
+    # file_uuid = uuid.uuid4()
 
     s3.put_object(
         Bucket=bucket_name,
         Body=content,
-        Key=f"{str(file_uuid)}.{file.filename.split('.')[-1]}",
+        Key=file.filename,
         ContentType=file.content_type or 'application/octet-stream',
     )
     await file.close()
