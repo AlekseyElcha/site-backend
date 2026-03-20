@@ -1,4 +1,5 @@
 import uuid
+from uuid import UUID
 
 import pytz
 from sqlalchemy import select, update
@@ -16,9 +17,11 @@ from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema
 
 async def create_new_question(
         question: NewQuestionSchema,
+        unique_id: UUID,
         session: AsyncSession,
 ):
     new_question = Questions(
+        id=unique_id,
         name=question.name,
         surname=question.surname,
         email=question.email,
@@ -32,7 +35,7 @@ async def create_new_question(
     except:
         raise CreateNewQuestionError
 
-    return new_question.id
+    return True
 
 
 async def get_all_questions_from_db(session: AsyncSession):
