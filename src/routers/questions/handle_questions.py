@@ -83,7 +83,7 @@ async def change_question_status_manually(
     }
 
 @router.post("/answer_question")
-async def test(
+async def answer_question(
         answer: NewAnswerSchema,
         session: Annotated[AsyncSession, Depends(get_session)]
 ):
