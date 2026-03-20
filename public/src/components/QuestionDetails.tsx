@@ -1,5 +1,6 @@
 import type { Question } from '../types'
 import { formatDate, formatTime, getStatusLabel, getStatusColor } from '../utils/formatting'
+import { FileList } from './FileList'
 import './QuestionDetails.css'
 
 interface QuestionDetailsProps {
@@ -47,6 +48,7 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
       <div className="question-details-message">
         <h3 className="message-title">Сообщение:</h3>
         <p className="message-text">{question.message}</p>
+        <FileList files={question.files} questionId={question.id} />
       </div>
 
       <div className="question-details-answers">
@@ -66,6 +68,7 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
                   </span>
                 </div>
                 <p className="answer-message">{answer.message}</p>
+                <FileList files={answer.files} questionId={answer.question_id} />
               </div>
             ))}
           </div>

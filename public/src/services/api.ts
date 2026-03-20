@@ -59,23 +59,19 @@ class APIService {
 
   // Questions endpoints
   async createQuestion(question: NewQuestionForm, files?: File[]): Promise<void> {
-  const formData = new FormData();
-  formData.append("question", JSON.stringify(question));
-
-  if (files && files.length > 0) {
-    files.forEach(file => formData.append("files", file));
+    const formData = new FormData()
+    formData.append('question', JSON.stringify(question))
+    if (files && files.length > 0) {
+      files.forEach(file => formData.append('files', file))
+    }
+    const response = await fetch(`${this.baseURL}/questions/create_question`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    })
+    return this.handleResponse<void>(response)
   }
 
-  const response = await fetch(`${this.baseURL}/questions/create_question`, {
-    method: 'POST',
-    credentials: 'include',
-    body: formData
-  });
-
-  return this.handleResponse<void>(response);
-}
-
-    // Если есть файлы — отправляем multipart с question как JSON-строкой
   async getAllQuestions(): Promise<Question[]> {
     const response = await fetch(`${this.baseURL}/handle_questions/all_questions`, {
       method: 'GET',
@@ -118,6 +114,24 @@ class APIService {
       credentials: 'include'
     })
     return this.handleResponse<Answer[]>(response)
+  }
+
+  async downloadAllFiles(questionId: string): Promise<string[]> {
+    const response = await fetch(`${this.baseURL}/files/download_all_files/${questionId}`, {
+      method: 'PUT',
+      credentials: 'include'
+    })
+    return this.handleResponse<string[]>(response)
+  }
+
+  async downloadFileByName(fileName: string): Promise<string> {
+    const response = await fetch(`${this.baseURL}/files/download_file_by_name`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ file_name: fileName })
+    })
+    return this.handleResponse<string>(response)
   }
 }
 

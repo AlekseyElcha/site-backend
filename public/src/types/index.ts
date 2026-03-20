@@ -19,6 +19,7 @@ export interface Answer {
   time: string       // формат: HH:MM:SS
   message: string
   question_id: string
+  files: string[]    // имена файлов
 }
 
 // Обращение пользователя
@@ -33,6 +34,7 @@ export interface Question {
   message: string
   status: QuestionStatus
   answers: Answer[]
+  files: string[]    // имена файлов
 }
 
 // Форма создания нового обращения
