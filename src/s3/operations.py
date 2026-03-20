@@ -3,7 +3,7 @@ import uuid
 from typing import List, Dict, Any
 
 import boto3
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from fastapi.params import Path, Depends, Body
 
 from exeptions import S3GetAllFilesError
@@ -16,7 +16,7 @@ s3 = boto3.client(
    verify=False,
    use_ssl=True,
 )
-bucket_name = settings.s3.bucket_name
+bucket_name = settings.s3.container
 
 router = APIRouter(
     prefix="/files",
@@ -69,7 +69,7 @@ async def upload_multiple_files(
     }
 
 
-def list_all_files_in_s3() -> dict:
+def list_all_files_in_s3():
     prefix = ""
     objects = []
     try:
@@ -99,16 +99,49 @@ def find_names_for_multiple_files(
     filenames = []
     for file in files_list:
         if question_uuid in str(file["key"]):
-            filenames.append(file)
+            filenames.append(file.get("key"))
     return filenames
 
 
-# @router.put("/download_files/{question_uuid}")
-# async def download_multiple_files(question_uuid: str = Body(embed=True)):
-#     filenames = find_names_for_multiple_files(question_uuid)
-#     url = s3.generate_presigned_url(
-#         ClientMethod="get_object",
-#         Params={"Bucket": settings., "Key": OBJECT_KEY},
-#         ExpiresIn=EXPIRES_IN,
-#     )
-#     return 1
+def find_names_for_single_file(
+        question_uuid: str,
+):
+    files_list = list_all_files_in_s3()
+    for file in files_list:
+        if question_uuid in str(file["key"]):
+            return file.get("key")
+    return None
+
+@router.put("/download_all_files/{question_uuid}")
+async def download_multiple_files(question_uuid: str):
+    filenames = find_names_for_multiple_files(question_uuid)
+    if not filenames:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="Файлы не были найдены."
+        )
+    urls = []
+    for filename in filenames:
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": settings.s3.container, "Key": filename},
+            ExpiresIn=settings.s3.url_expiration,
+        )
+        urls.append(url)
+    return urls
+
+
+@router.put("/download_file_by_name")
+async def download_file_by_name(file_name: str = Body(embed=True)):
+    try:
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": settings.s3.container, "Key": file_name},
+            ExpiresIn=settings.s3.url_expiration,
+        )
+    except:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="Файл не найден."
+        )
+    return url
