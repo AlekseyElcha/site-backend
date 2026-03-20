@@ -30,17 +30,18 @@ async def create_question(
         files: Optional[List[UploadFile]] = File(default=None),
 ):
     question_data = NewQuestionSchema.model_validate_json(question)
+    unique_id = uuid.uuid4()
     filenames = []
     if files:
         for file in files:
             old_filename = file.filename
-            new_filename = (f"{old_filename}_{datetime.datetime.now(datetime.timezone.utc)}UTC_"
-                            f"{str(uuid.uuid4())[:4]}.{old_filename.split('.')[-1]}")
+            new_filename = (f"{old_filename}_"
+                            f"{unique_id}.{old_filename.split('.')[-1]}")
             filenames.append(new_filename)
             file.filename = new_filename
         question_data.files = filenames
     try:
-        question_id = await create_new_question(question_data, session)
+        await create_new_question(question_data, unique_id, session)
     except CreateNewQuestionError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -50,7 +51,7 @@ async def create_question(
         try:
             await upload_multiple_files(
                 files=files,
-                question_uuid=question_id,
+                question_uuid=unique_id,
             )
         except Exception as e:
             raise HTTPException(
