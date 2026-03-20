@@ -27,7 +27,6 @@ class Questions(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         SQLAUUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()")
     )
     date: Mapped[date] = mapped_column(Date, server_default=text("CURRENT_DATE"))
     time: Mapped[time] = mapped_column(Time, server_default=text("CURRENT_TIME"))
