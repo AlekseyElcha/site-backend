@@ -7,6 +7,7 @@ from src.config.business import Business
 from src.config.db import DatabaseConfig
 from src.config.email import EmailServiceConfig
 from src.config.jwt import AuthJWT
+from src.config.s3 import S3Settings
 
 
 class Settings(BaseSettings):
@@ -17,5 +18,6 @@ class Settings(BaseSettings):
     auth_jwt: AuthJWT = AuthJWT()
     business: Business = Business()
     email: EmailServiceConfig = EmailServiceConfig()
+    s3: S3Settings = S3Settings()
 
 settings = Settings()
