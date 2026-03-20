@@ -57,3 +57,6 @@ class DecodeTokenError(QuestionsBaseException):
 class S3OperationsError(QuestionsBaseException):
     pass
 
+
+class S3GetAllFilesError(QuestionsBaseException):\
+    pass
