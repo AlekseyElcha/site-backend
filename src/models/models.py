@@ -62,7 +62,7 @@ class Answers(Base):
     question: Mapped["Questions"] = relationship(
         back_populates="answers"
     )
-    files: Mapped[List[str]] = mapped_column(ARRAY(String))
+    files: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=True)
 
 
 class EmailVerification(Base):
