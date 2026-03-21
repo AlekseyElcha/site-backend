@@ -63,3 +63,30 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.answer-form .file-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.answer-form .file-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.answer-form .file-list {
+  margin: 0.5rem 0 0 0;
+  padding: 0 0 0 1.25rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.answer-form .file-list li {
+  margin-bottom: 0.25rem;
+}

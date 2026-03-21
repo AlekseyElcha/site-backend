@@ -17,9 +17,27 @@ function App() {
           </ProtectedRoute>
         } 
       />
+
+      <Route 
+        path="/user/:questionId" 
+        element={
+          <ProtectedRoute requiredRole="user">
+            <UserPage />
+          </ProtectedRoute>
+        } 
+      />
       
       <Route 
         path="/admin" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminPage />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/admin/:questionId" 
         element={
           <ProtectedRoute requiredRole="admin">
             <AdminPage />

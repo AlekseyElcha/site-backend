@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { apiService } from '../services/api'
+import { sortQuestions } from '../utils/formatting'
 import type { Question, QuestionStatus } from '../types'
 import { QuestionCard } from '../components/QuestionCard'
 import { QuestionDetails } from '../components/QuestionDetails'
@@ -12,6 +14,7 @@ import { SuccessNotification } from '../components/SuccessNotification'
 import './AdminPage.css'
 
 export function AdminPage() {
+  const { questionId } = useParams<{ questionId?: string }>()
   const { logout } = useAuth()
   const [questions, setQuestions] = useState<Question[]>([])
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([])
@@ -39,8 +42,10 @@ export function AdminPage() {
         answers: allAnswers.filter(answer => answer.question_id === question.id)
       }))
       
-      setQuestions(questionsWithAnswers)
-      filterQuestions(questionsWithAnswers, selectedStatus)
+      // Сортируем вопросы
+      const sortedQuestions = sortQuestions(questionsWithAnswers)
+      setQuestions(sortedQuestions)
+      filterQuestions(sortedQuestions, selectedStatus)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка загрузки обращений')
     } finally {
@@ -64,7 +69,17 @@ export function AdminPage() {
     filterQuestions(questions, selectedStatus)
   }, [selectedStatus, questions])
 
-  const handleAnswerSubmit = async (message: string) => {
+  // Автоматически выбираем вопрос из URL
+  useEffect(() => {
+    if (questionId && questions.length > 0) {
+      const question = questions.find(q => q.id === questionId)
+      if (question) {
+        setSelectedQuestion(question)
+      }
+    }
+  }, [questionId, questions])
+
+  const handleAnswerSubmit = async (message: string, files: File[]) => {
     if (!selectedQuestion) return
 
     try {
@@ -73,7 +88,7 @@ export function AdminPage() {
       const response = await apiService.answerQuestion({
         message,
         question_id: selectedQuestion.id
-      })
+      }, files)
       
       // Показываем сообщение с бэкенда
       if (response.message) {
@@ -177,7 +192,7 @@ export function AdminPage() {
                   >
                     <option value="active">Активно</option>
                     <option value="answered">Отвечено</option>
-                    <option value="closed">Закрыто</option>
+                    <option value="closed">Архив</option>
                   </select>
                 </div>
                 

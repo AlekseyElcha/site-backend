@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './AnswerForm.css'
 
 interface AnswerFormProps {
-  onSubmit: (message: string) => Promise<void>
+  onSubmit: (message: string, files: File[]) => Promise<void>
   isLoading: boolean
 }
 
 export function AnswerForm({ onSubmit, isLoading }: AnswerFormProps) {
   const [message, setMessage] = useState('')
+  const [files, setFiles] = useState<File[]>([])
   const [error, setError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,8 +21,10 @@ export function AnswerForm({ onSubmit, isLoading }: AnswerFormProps) {
     }
     
     setError('')
-    await onSubmit(message)
+    await onSubmit(message, files)
     setMessage('')
+    setFiles([])
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   return (
@@ -41,6 +45,24 @@ export function AnswerForm({ onSubmit, isLoading }: AnswerFormProps) {
           className={error ? 'error' : ''}
         />
         {error && <span className="error-text">{error}</span>}
+      </div>
+
+      <div className="form-group">
+        <label className="file-label">Прикрепить файлы (необязательно)</label>
+        <input
+          type="file"
+          multiple
+          ref={fileInputRef}
+          onChange={(e) => setFiles(Array.from(e.target.files || []))}
+          className="file-input"
+        />
+        {files.length > 0 && (
+          <ul className="file-list">
+            {files.map((f, i) => (
+              <li key={i}>{f.name}</li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <button 

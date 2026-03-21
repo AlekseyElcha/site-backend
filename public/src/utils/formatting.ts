@@ -74,7 +74,7 @@ export function getStatusLabel(status: QuestionStatus): string {
   const statusLabels: Record<QuestionStatus, string> = {
     active: 'Активно',
     answered: 'Отвечено',
-    closed: 'Закрыто'
+    closed: 'Архив'
   }
   return statusLabels[status] || status
 }
@@ -87,4 +87,24 @@ export function getStatusColor(status: QuestionStatus): string {
     closed: '#6b7280'     // secondary
   }
   return statusColors[status] || '#6b7280'
+}
+
+// Сортировка вопросов: active (новые→старые) → answered (новые→старые) → closed (новые→старые)
+export function sortQuestions<T extends { status: QuestionStatus; date: string; time: string }>(questions: T[]): T[] {
+  const statusOrder: Record<QuestionStatus, number> = {
+    active: 1,
+    answered: 2,
+    closed: 3
+  }
+
+  return [...questions].sort((a, b) => {
+    // Сначала по статусу
+    const statusDiff = statusOrder[a.status] - statusOrder[b.status]
+    if (statusDiff !== 0) return statusDiff
+
+    // Внутри статуса — по дате/времени (новые сверху)
+    const dateA = new Date(`${a.date}T${a.time.split('.')[0]}Z`)
+    const dateB = new Date(`${b.date}T${b.time.split('.')[0]}Z`)
+    return dateB.getTime() - dateA.getTime()
+  })
 }

@@ -80,12 +80,16 @@ class APIService {
     return this.handleResponse<Question[]>(response)
   }
 
-  async answerQuestion(answer: NewAnswerData): Promise<{ message: string }> {
+  async answerQuestion(answer: NewAnswerData, files?: File[]): Promise<{ message: string }> {
+    const formData = new FormData()
+    formData.append('answer', JSON.stringify(answer))
+    if (files && files.length > 0) {
+      files.forEach(file => formData.append('files', file))
+    }
     const response = await fetch(`${this.baseURL}/handle_questions/answer_question`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(answer)
+      body: formData
     })
     return this.handleResponse<{ message: string }>(response)
   }

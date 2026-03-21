@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { apiService } from '../services/api'
+import { sortQuestions } from '../utils/formatting'
 import type { Question, NewQuestionForm } from '../types'
 import { QuestionCard } from '../components/QuestionCard'
 import { QuestionDetails } from '../components/QuestionDetails'
@@ -11,6 +13,7 @@ import { SuccessNotification } from '../components/SuccessNotification'
 import './UserPage.css'
 
 export function UserPage() {
+  const { questionId } = useParams<{ questionId?: string }>()
   const { user, logout } = useAuth()
   const [questions, setQuestions] = useState<Question[]>([])
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null)
@@ -40,7 +43,9 @@ export function UserPage() {
         answers: allAnswers.filter(answer => answer.question_id === question.id)
       }))
       
-      setQuestions(questionsWithAnswers)
+      // Сортируем вопросы
+      const sortedQuestions = sortQuestions(questionsWithAnswers)
+      setQuestions(sortedQuestions)
       
       // Обновляем выбранное обращение, если оно было выбрано
       if (selectedQuestion) {
@@ -66,6 +71,16 @@ export function UserPage() {
     
     return () => clearInterval(interval)
   }, [user])
+
+  // Автоматически выбираем вопрос из URL
+  useEffect(() => {
+    if (questionId && questions.length > 0) {
+      const question = questions.find(q => q.id === questionId)
+      if (question) {
+        setSelectedQuestion(question)
+      }
+    }
+  }, [questionId, questions])
 
   const handleCreateQuestion = async (form: NewQuestionForm, files: File[]) => {
     try {
