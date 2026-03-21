@@ -1,25 +1,30 @@
+import uuid
 from email.policy import HTTP
-from typing import Annotated
+from typing import Annotated, Optional, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.params import Body
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
+from fastapi.params import Body, Form, File
 from pyexpat.errors import messages
 from sqlalchemy import True_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exeptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
-    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError
+    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError
+from src.config.settings import settings
 from src.database.crud.questions import (
     get_all_questions_from_db,
-    create_new_answer_and_send_email,
     change_question_status,
     get_answers_for_questions,
     get_answers_for_question_by_uuid,
+    create_new_answer,
 )
 from src.database.db import get_session
+from src.database.services.auxiliary import get_user_email_by_question_id
 from src.models.models import Answers
+from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import NewAnswerSchema
+from src.services.email_service import send_notification_with_text
 
 router = APIRouter(
     prefix="/handle_questions",
@@ -84,8 +89,10 @@ async def change_question_status_manually(
 
 @router.post("/answer_question")
 async def answer_question(
-        answer: NewAnswerSchema,
-        session: Annotated[AsyncSession, Depends(get_session)]
+        # answer: NewAnswerSchema
+        answer: Annotated[str, Form()],
+        session: Annotated[AsyncSession, Depends(get_session)],
+        files: Optional[List[UploadFile]] = File(default=None),
 ):
     try:
         await create_new_answer_and_send_email(answer, session)
@@ -106,7 +113,7 @@ async def answer_question(
         )
     try:
         await change_question_status(
-            question_id=answer.question_id,
+            question_id=answer_data.question_id,
             new_status="answered",
             session=session
         )
@@ -116,6 +123,6 @@ async def answer_question(
             detail="Не удалось обновить статус вопроса."
         )
     return {
-        "message": f"Ответ на вопрос {answer.question_id} успешно создан и отправлен. "
+        "message": f"Ответ на вопрос {answer_data.question_id} успешно создан и отправлен. "
                    f"Статус вопроса был автоматически обновлён до «Отвечено»."
     }
