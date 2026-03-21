@@ -15,11 +15,14 @@ async def validate_auth_user(
         user_data: UserAuthSchema,
         session: AsyncSession = Depends(get_session)
 ):
+    # TODO только для разработки!!!
+    if user_data.auth_code == "111111":
+        return user_data
     query = (select(EmailVerification).where(EmailVerification.email == user_data.email)
              .where(EmailVerification.code == user_data.auth_code))
     try:
         res = await session.execute(query)
-        data = res.scalars().one()
+        data = res.scalars().first()
     except:
         raise BasicOperationDatabaseError
     if data.was_used:
