@@ -94,8 +94,29 @@ async def answer_question(
         session: Annotated[AsyncSession, Depends(get_session)],
         files: Optional[List[UploadFile]] = File(default=None),
 ):
+    answer_data = NewAnswerSchema.model_validate_json(answer)
+    if files:
+        filenames = []
+        for file in files:
+            old_filename = file.filename
+            new_filename = (
+                f"{old_filename}_" f"{answer_data.question_id}_answer.{old_filename.split('.')[-1]}"
+            )
+            filenames.append(new_filename)
+            file.filename = new_filename
+        answer_data.files = filenames
     try:
-        await create_new_answer_and_send_email(answer, session)
+        user_email = await get_user_email_by_question_id(
+            question_id=answer_data.question_id,
+            session=session
+        )
+    except GetUserEmailByQuestionError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при получении email при помощи id вопроса."
+        )
+    try:
+        await create_new_answer(answer_data, session)
     except CreateNewAnswerError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -106,11 +127,17 @@ async def answer_question(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка при получении почты по идентификатору вопроса."
         )
-    except SendEmailError:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка при отправке email."
-        )
+    if files:
+        try:
+            await upload_multiple_files(
+                files=files,
+                question_uuid=answer_data.question_id,
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Ошибка при загрузке!"
+            )
     try:
         await send_notification_with_text(
             email=user_email,
