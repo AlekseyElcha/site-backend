@@ -1,14 +1,16 @@
 import asyncio
-import uuid
-from typing import List, Dict, Any
+from typing import List, Annotated
 
 import boto3
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
-from fastapi.params import Path, Depends, Body
+from fastapi.params import Depends, Body
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import S3GetAllFilesError
+from exeptions import S3GetAllFilesError, BasicOperationDatabaseError
 from src.config.settings import settings
-from src.services.randomizer import generate_random_number_str
+from src.database.db import get_session
+from src.models.models import Questions
 
 s3 = boto3.client(
    service_name='s3',
@@ -112,14 +114,31 @@ def find_names_for_single_file(
             return file.get("key")
     return None
 
+
+async def get_filenames_by_question_id(question_id: str, session: AsyncSession):
+    query = select(Questions.files).where(Questions.id == question_id)
+    try:
+        await session.execute(query)
+        results = await session.execute(query)
+        filenames = results.scalars().first()
+        return filenames
+    except:
+        raise BasicOperationDatabaseError
+
+
+
 @router.put("/download_all_files/{question_uuid}")
-async def download_multiple_files(question_uuid: str):
-    filenames = find_names_for_multiple_files(question_uuid)
-    if not filenames:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail="Файлы не были найдены."
-        )
+async def download_multiple_files(
+        question_uuid: str,
+        session: Annotated[AsyncSession, Depends(get_session)],
+):
+    # filenames = find_names_for_multiple_files(question_uuid)
+    # if not filenames:
+    #     raise HTTPException(
+    #         status.HTTP_404_NOT_FOUND,
+    #         detail="Файлы не были найдены."
+    #     )
+    filenames = await get_filenames_by_question_id(question_uuid, session)
     urls = []
     for filename in filenames:
         url = s3.generate_presigned_url(
