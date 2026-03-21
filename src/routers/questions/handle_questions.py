@@ -112,6 +112,17 @@ async def answer_question(
             detail="Ошибка при отправке email."
         )
     try:
+        await send_notification_with_text(
+            email=user_email,
+            subject="ООО «Домофон-сервис». На Ваш вопрос поступил ответ.",
+            message=f"На Ваш вопрос {answer_data.question_id} поступил ответ.\n"
+                    f"Ознакомиться с ним Вы можете на нашей платформе по ссылке"
+                    f" {settings.email.url_to_personal_account}{answer_data.question_id}.\n\n"
+                    f"Данное сообщение было отправлено автоматически, просьба не отвечать на него."
+        )
+    except:
+        print("Ошибка при отправке нотификации user с ответом.")
+    try:
         await change_question_status(
             question_id=answer_data.question_id,
             new_status="answered",
