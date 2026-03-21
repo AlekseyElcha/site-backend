@@ -5,7 +5,6 @@ from sqlalchemy import select
 from exeptions import GetUserEmailByQuestionError
 from src.models.models import Questions
 
-
 async def get_user_email_by_question_id(
         session: AsyncSession,
         question_id: uuid.UUID
