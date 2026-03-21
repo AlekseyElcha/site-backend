@@ -48,13 +48,14 @@ async def get_all_questions_from_db(session: AsyncSession):
     return result.scalars().all()
 
 
-async def create_new_answer_and_send_email(
+async def create_new_answer(
         answer: NewAnswerSchema,
         session: AsyncSession,
 ):
     new_answer = Answers(
         message=answer.message,
         question_id=answer.question_id,
+        files=answer.files,
     )
     session.add(new_answer)
     try:
@@ -62,15 +63,15 @@ async def create_new_answer_and_send_email(
     except:
         raise CreateNewAnswerError
     await session.close()
-    try:
-        await send_answer_email(
-            user_email=await get_user_email_by_question_id(session, answer.question_id),
-            message=answer.message,
-        )
-    except GetUserEmailByQuestionError:
-        raise GetUserEmailByQuestionErrorInEmailSender
-    except SendEmailError:
-        raise SendEmailError
+    # try:
+    #     await send_answer_email(
+    #         user_email=await get_user_email_by_question_id(session, answer.question_id),
+    #         message=answer.message,
+    #     )
+    # except GetUserEmailByQuestionError:
+    #     raise GetUserEmailByQuestionErrorInEmailSender
+    # except SendEmailError:
+    #     raise SendEmailError
     return True
 
 
