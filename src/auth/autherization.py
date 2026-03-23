@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from exeptions import BasicOperationDatabaseError, SendEmailError
 from src.auth.code_generator import generate_auth_code_and_and_to_db
-from src.auth.utils import validate_auth_user
+from src.auth.utils import validate_auth_user, get_current_auth_user_for_refresh
 from src.config.settings import settings
 from src.database.crud.auth_codes import (
     change_auth_code_usage_status_by_user_email,
@@ -16,7 +16,7 @@ from src.schemas.schemas import UserAuthSchema
 from src.services.email_service import send_auth_code
 from src.services.token_service import (
     create_access_token,
-    decode_jwt,
+    decode_jwt, create_refresh_token,
 )
 
 router = APIRouter(
@@ -63,12 +63,40 @@ async def login(
             detail="Произошла ошибка сервера.",
         )
     access_token = create_access_token(user_data.email, user_role)
+    refresh_token = create_refresh_token(user_data.email, user_role)
+
+    # TODO добавить параметры работы (httponly, samesite, secure)
     response.set_cookie(
         key=settings.auth_jwt.access_cookie_name,
         value=access_token,
     )
+    response.set_cookie(
+        key=settings.auth_jwt.refresh_cookie_name,
+        value=refresh_token
+    )
 
-    return {"access_token": access_token}
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token
+    }
+
+# TODO добавить проверку валидности (время истечения) для refresh токена
+@router.post("/refresh")
+def refresh(
+        response: Response,
+        request: Request,
+        user_data = Depends(get_current_auth_user_for_refresh)
+    ):
+        access_token = create_access_token(user_data.get("sub"), user_data.get("role"))
+        response.delete_cookie(settings.auth_jwt.access_cookie_name)
+        response.set_cookie(
+            key=settings.auth_jwt.access_cookie_name,
+            value=access_token
+        )
+        return {
+            "access_token": access_token,
+        }
+
 
 @router.get("/user_info")
 def auth_user_check_self_info(
