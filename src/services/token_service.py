@@ -6,7 +6,6 @@ from fastapi.security import OAuth2PasswordBearer
 
 from exeptions import DecodeTokenError
 from src.config.settings import settings
-from src.schemas.schemas import UserAuthSchema, UserSchema, UserDBSchema
 
 encoded_jwt = jwt.encode({"some": "payload"}, "secret", algorithm="HS256")
 jwt.decode(encoded_jwt, "secret", algorithms=["HS256"])
@@ -31,12 +30,26 @@ def decode_jwt(
 
 def create_access_token(user_email: str, user_role: str,):
     jwt_payload = {
+        "type": "access",
         "sub": user_email,
         "role": user_role,
         "iat": datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(minutes=settings.auth_jwt.expiration_timeout_minutes),
+        "exp": datetime.utcnow()
+        + timedelta(minutes=settings.auth_jwt.access_expiration_timeout_minutes),
     }
     return encode_jwt(jwt_payload)
+
+
+def create_refresh_token(user_email: str, user_role: str):
+    jwt_payload = {
+        "type": "refresh",
+        "sub": user_email,
+        "role": user_role,
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(minutes=settings.auth_jwt.refresh_expiration_minutes),
+    }
+    return encode_jwt(jwt_payload)
+
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/auth/login/",
