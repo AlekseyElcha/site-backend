@@ -76,6 +76,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth()
   }, [checkAuth])
 
+  // Автоматическое обновление токена каждые 10 минут
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const refreshInterval = setInterval(async () => {
+      try {
+        await apiService.refreshToken()
+        // Обновляем информацию о пользователе после refresh
+        const userInfo = await apiService.getUserInfo()
+        setUser(userInfo)
+      } catch (error) {
+        console.error('Ошибка обновления токена:', error)
+        // Если refresh не удался — разлогиниваем
+        await logout()
+      }
+    }, 10 * 60 * 1000) // 10 минут
+
+    return () => clearInterval(refreshInterval)
+  }, [isAuthenticated, logout])
+
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, checkAuth }}>
       {children}

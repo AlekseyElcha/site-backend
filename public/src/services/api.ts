@@ -57,6 +57,14 @@ class APIService {
     await this.handleResponse<void>(response)
   }
 
+  async refreshToken(): Promise<{ access_token: string }> {
+    const response = await fetch(`${this.baseURL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    return this.handleResponse<{ access_token: string }>(response)
+  }
+
   // Questions endpoints
   async createQuestion(question: NewQuestionForm, files?: File[]): Promise<void> {
     const formData = new FormData()

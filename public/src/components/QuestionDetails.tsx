@@ -46,14 +46,14 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
       </div>
 
       <div className="question-details-message">
-        <h3 className="message-title">Сообщение:</h3>
+        <h3 className="message-title">Ваше сообщение:</h3>
         <p className="message-text">{question.message}</p>
         <FileList files={question.files} questionId={question.id} />
       </div>
 
       <div className="question-details-answers">
         <h3 className="answers-title">
-          Ответы {question.answers && question.answers.length > 0 && `(${question.answers.length})`}
+          Ответы: {question.answers && question.answers.length > 0 && `(${question.answers.length})`}
         </h3>
         
         {!question.answers || question.answers.length === 0 ? (
