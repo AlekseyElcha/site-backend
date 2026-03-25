@@ -9,7 +9,7 @@ class AuthJWT(BaseModel):
     private_key_path: Path = BASE_DIR / "src" / "certs" / "jwt-private.pem"
     public_key_path: Path = BASE_DIR / "src" / "certs" / "jwt-public.pem"
     algorithm: str = "RS256"
-    access_expiration_timeout_minutes: int = 2
+    access_expiration_timeout_minutes: int = 15
     refresh_expiration_minutes: int = 30 * 60 * 24 # 30 дней
     access_cookie_name: str = "access_token_cookie"
     refresh_cookie_name: str = "refresh_token_cookie"
