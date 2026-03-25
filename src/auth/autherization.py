@@ -1,9 +1,9 @@
 from typing import Annotated
-
+import logging
 from fastapi import APIRouter, Form, HTTPException, status, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import BasicOperationDatabaseError, SendEmailError
+from exceptions import BasicOperationDatabaseError, SendEmailError
 from src.auth.code_generator import generate_auth_code_and_and_to_db
 from src.auth.utils import validate_auth_user, get_current_auth_user_for_refresh
 from src.config.settings import settings
@@ -19,16 +19,24 @@ from src.services.token_service import (
     decode_jwt, create_refresh_token,
 )
 
+logging.basicConfig(
+    level=settings.logs.level,
+    datefmt=settings.logs.datefmt,
+    format=settings.logs.format,
+)
+logger = logging.getLogger(__name__)
+
 router = APIRouter(
     prefix="/auth",
     tags=["auth"],
 )
 
+
 @router.post("/get_auth_code")
 async def get_auth_code(session: Annotated[AsyncSession, Depends(get_session)], email: str = Form()):
-    code = await generate_auth_code_and_and_to_db(email=email, session=session)
+    code = await generate_auth_code_and_and_to_db(email=email.lower(), session=session)
     try:
-        await send_auth_code(user_email=email, auth_code=code)
+        await send_auth_code(user_email=email.lower(), auth_code=code)
     except SendEmailError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -48,7 +56,7 @@ async def login(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
     user_role = await get_user_role_if_user_exists_else_create_new_user(
-        user_email=user_data.email,
+        user_email=user_data.email.lower(),
         session=session
     )
     try:
