@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 
-from exeptions import (
+from exceptions import (
     AddNewEmailVerificationCodeToDBError,
     BasicOperationDatabaseError,
 )

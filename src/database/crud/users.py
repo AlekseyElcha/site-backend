@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import BasicOperationDatabaseError
+from exceptions import BasicOperationDatabaseError
 from src.models.models import AllUsers
 from src.schemas.schemas import UserAddSchema
 

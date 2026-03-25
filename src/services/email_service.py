@@ -2,23 +2,23 @@ import smtplib
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from uuid import UUID
 
 from dotenv import load_dotenv
 from src.config.settings import settings
-from exeptions import SendEmailError
+from exceptions import SendEmailError
 
 
 load_dotenv()
-async def send_answer_email(user_email: str, message: str):
+async def send_answer_email_mod(user_email: str, message: str):
     fromaddr = settings.email.from_address
-    toaddr = f"{user_email}"
+    toaddr = f"{user_email.lower()}"
     passw = settings.email.password
 
     msg = MIMEMultipart()
     msg['From'] = fromaddr
     msg['To'] = toaddr
-    msg['Subject'] = "Ответ // тест"
-
+    msg['Subject'] = f"ООО «Домофон-сервис». Ответ на Ваш вопрос."
     body = (f"{message}")
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
@@ -33,6 +33,33 @@ async def send_answer_email(user_email: str, message: str):
 
     except Exception as e:
         raise SendEmailError
+
+
+async def send_answer_email_autocreated_by_question_id(question_id: UUID):
+
+    fromaddr = settings.email.from_address
+    toaddr = f"{user_email.lower()}"
+    passw = settings.email.password
+
+    msg = MIMEMultipart()
+    msg['From'] = fromaddr
+    msg['To'] = toaddr
+    msg['Subject'] = f"ООО «Домофон-сервис». Ответ на Ваш вопрос."
+    body = (f"{message}")
+    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+    try:
+        server = smtplib.SMTP_SSL(settings.email.smtp, settings.email.port)
+
+        server.login(fromaddr, passw)
+
+        text = msg.as_string()
+        server.sendmail(fromaddr, toaddr, text)
+        print("Письмо успешно отправлено!")
+
+    except Exception as e:
+        raise SendEmailError
+
 
 async def send_auth_code(user_email: str, auth_code: str):
     fromaddr = settings.email.from_address
@@ -80,7 +107,6 @@ async def send_notification_with_text(email: str, subject: str , message: str):
 
         text = msg.as_string()
         server.sendmail(fromaddr, toaddr, text)
-        print("Письмо успешно отправлено!")
 
     except Exception as e:
         raise SendEmailError

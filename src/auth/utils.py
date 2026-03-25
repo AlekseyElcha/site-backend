@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import BasicOperationDatabaseError, TokenAlreadyUsed
+from exceptions import BasicOperationDatabaseError, TokenAlreadyUsed
 from src.database.db import get_session
 from src.models.models import EmailVerification
 from src.schemas.schemas import UserAuthSchema

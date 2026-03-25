@@ -7,7 +7,7 @@ from fastapi.params import Depends, Body
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import S3GetAllFilesError, BasicOperationDatabaseError
+from exceptions import S3GetAllFilesError, BasicOperationDatabaseError
 from src.config.settings import settings
 from src.database.db import get_session
 from src.models.models import Questions

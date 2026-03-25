@@ -9,7 +9,7 @@ from pyexpat.errors import messages
 from sqlalchemy import True_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
+from exceptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
     SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError
 from src.config.settings import settings
 from src.database.crud.questions import (

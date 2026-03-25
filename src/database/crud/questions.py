@@ -6,11 +6,11 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import time, timezone
 
-from exeptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNewAnswerError, \
+from exceptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNewAnswerError, \
     GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError, \
     BasicOperationDatabaseError
 from src.database.services.auxiliary import get_user_email_by_question_id
-from src.services.email_service import send_answer_email
+from src.services.email_service import send_answer_email_autocreated_by_question_id
 from src.models.models import Questions, Answers
 from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema
 
@@ -24,7 +24,7 @@ async def create_new_question(
         id=unique_id,
         name=question.name,
         surname=question.surname,
-        email=question.email,
+        email=question.email.lower(),
         address=question.address,
         message=question.message,
         files=question.files,
