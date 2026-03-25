@@ -12,3 +12,5 @@ class EmailServiceConfig(BaseModel):
 
     url_to_personal_account: str = "http://localhost:3000/user/"
     url_to_admin_account: str = "http://localhost:3000/admin/"
+
+    retries_for_sending_messages: int = 3
