@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exeptions import (
+from exceptions import (
     CreateNewEmailVerificationCodeError,
     AddNewEmailVerificationCodeToDBError,
 )
