@@ -11,12 +11,14 @@ export function StatusFilter({ selectedStatus, onStatusChange }: StatusFilterPro
   const statuses: Array<QuestionStatus | 'all'> = ['all', 'active', 'answered', 'closed']
 
   return (
-    <div className="status-filter">
+    <div className="status-filter" role="group" aria-label="Фильтр по статусу">
       {statuses.map((status) => (
         <button
           key={status}
           className={`filter-button ${selectedStatus === status ? 'active' : ''}`}
           onClick={() => onStatusChange(status)}
+          aria-pressed={selectedStatus === status}
+          type="button"
         >
           {status === 'all' ? 'Все' : getStatusLabel(status)}
         </button>

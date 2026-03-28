@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { Question } from '../types'
 import { formatDate, formatTime, getStatusLabel, getStatusColor } from '../utils/formatting'
 import './QuestionCard.css'
@@ -8,14 +9,15 @@ interface QuestionCardProps {
   isSelected?: boolean
 }
 
-export function QuestionCard({ question, onClick, isSelected }: QuestionCardProps) {
+export const QuestionCard = memo(function QuestionCard({ question, onClick, isSelected }: QuestionCardProps) {
   return (
-    <div 
+    <article 
       className={`question-card ${isSelected ? 'selected' : ''}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
+      aria-label={`Обращение от ${question.name} ${question.surname}, статус: ${getStatusLabel(question.status)}`}
     >
       <div className="question-card-header">
         <h3 className="question-card-title">
@@ -24,6 +26,8 @@ export function QuestionCard({ question, onClick, isSelected }: QuestionCardProp
         <span 
           className="question-card-status"
           style={{ backgroundColor: getStatusColor(question.status) }}
+          role="status"
+          aria-label={`Статус: ${getStatusLabel(question.status)}`}
         >
           {getStatusLabel(question.status)}
         </span>
@@ -31,9 +35,9 @@ export function QuestionCard({ question, onClick, isSelected }: QuestionCardProp
       
       <div className="question-card-info">
         <p className="question-card-email">{question.email}</p>
-        <p className="question-card-date">
+        <time className="question-card-date" dateTime={`${question.date}T${question.time}`}>
           {formatDate(question.date, question.time)} {formatTime(question.date, question.time)}
-        </p>
+        </time>
       </div>
       
       <p className="question-card-message">
@@ -43,10 +47,10 @@ export function QuestionCard({ question, onClick, isSelected }: QuestionCardProp
       </p>
       
       {question.answers && question.answers.length > 0 && (
-        <p className="question-card-answers">
+        <p className="question-card-answers" aria-label={`Количество ответов: ${question.answers.length}`}>
           Ответов: {question.answers.length}
         </p>
       )}
-    </div>
+    </article>
   )
-}
+})

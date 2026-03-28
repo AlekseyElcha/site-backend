@@ -66,31 +66,85 @@
 
 .page-content {
   flex: 1;
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 1rem;
   padding: 1rem 2rem;
-  overflow: hidden;
-  min-height: 0;
-}
-
-.sidebar {
-  background: var(--bg-primary);
-  border-radius: 0.5rem;
-  padding: 1rem;
   overflow-y: auto;
 }
 
-.questions-list {
+.filter-section {
+  margin-bottom: 1rem;
+}
+
+.user-filters {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.main-content {
+  gap: 1.5rem;
+  padding: 1rem;
   background: var(--bg-primary);
   border-radius: 0.5rem;
-  overflow-y: auto;
+  border: 1px solid var(--border-color);
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-toggle input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.filter-toggle span {
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+}
+
+.filter-hint {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.user-actions {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+}
+
+.resolve-button {
+  padding: 0.75rem 1.5rem;
+  background: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resolve-button:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.resolve-button:active {
+  transform: translateY(0);
+}
+
+.questions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  padding-bottom: 2rem;
 }
 
 .empty-state {
@@ -129,12 +183,12 @@
     flex: 1;
   }
   
-  .page-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+  .user-filters {
+    flex-direction: column;
+    gap: 0.75rem;
   }
   
-  .sidebar {
-    max-height: 300px;
+  .questions-grid {
+    grid-template-columns: 1fr;
   }
 }

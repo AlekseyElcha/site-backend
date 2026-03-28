@@ -35,6 +35,7 @@ export interface Question {
   status: QuestionStatus
   answers: Answer[]
   files: string[]    // имена файлов
+  comment?: string   // системный комментарий (опционально)
 }
 
 // Форма создания нового обращения

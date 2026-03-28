@@ -9,12 +9,14 @@ interface QuestionDetailsProps {
 
 export function QuestionDetails({ question }: QuestionDetailsProps) {
   return (
-    <div className="question-details">
+    <article className="question-details" aria-labelledby="modal-title">
       <div className="question-details-header">
-        <h2 className="question-details-title">Детали обращения</h2>
+        <h2 id="modal-title" className="question-details-title">Детали обращения</h2>
         <span 
           className="question-details-status"
           style={{ backgroundColor: getStatusColor(question.status) }}
+          role="status"
+          aria-label={`Статус: ${getStatusLabel(question.status)}`}
         >
           {getStatusLabel(question.status)}
         </span>
@@ -45,13 +47,20 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
         </div>
       </div>
 
-      <div className="question-details-message">
+      <section className="question-details-message">
         <h3 className="message-title">Ваше сообщение:</h3>
         <p className="message-text">{question.message}</p>
         <FileList files={question.files} questionId={question.id} />
-      </div>
+      </section>
 
-      <div className="question-details-answers">
+      {question.comment && (
+        <section className="question-system-comment">
+          <h3 className="comment-title">Системный комментарий:</h3>
+          <p className="comment-text">{question.comment}</p>
+        </section>
+      )}
+
+      <section className="question-details-answers" aria-label="Ответы на обращение">
         <h3 className="answers-title">
           Ответы: {question.answers && question.answers.length > 0 && `(${question.answers.length})`}
         </h3>
@@ -61,19 +70,19 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
         ) : (
           <div className="answers-list">
             {question.answers.map((answer) => (
-              <div key={answer.id} className="answer-item">
+              <article key={answer.id} className="answer-item">
                 <div className="answer-header">
-                  <span className="answer-date">
+                  <time className="answer-date" dateTime={`${answer.date}T${answer.time}`}>
                     {formatDate(answer.date, answer.time)} {formatTime(answer.date, answer.time)}
-                  </span>
+                  </time>
                 </div>
                 <p className="answer-message">{answer.message}</p>
                 <FileList files={answer.files} questionId={answer.question_id} />
-              </div>
+              </article>
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </section>
+    </article>
   )
 }

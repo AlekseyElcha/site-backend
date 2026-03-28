@@ -69,6 +69,29 @@
   margin: 0;
 }
 
+.question-system-comment {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 0.5rem;
+}
+
+.comment-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #92400e;
+  margin: 0 0 0.5rem 0;
+}
+
+.comment-text {
+  color: #78350f;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
 .question-details-answers {
   border-top: 1px solid var(--border-color);
   padding-top: 1.5rem;

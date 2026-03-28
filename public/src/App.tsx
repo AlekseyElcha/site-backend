@@ -1,8 +1,11 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
-import { UserPage } from './pages/UserPage'
-import { AdminPage } from './pages/AdminPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { LoadingSpinner } from './components/LoadingSpinner'
+
+const UserPage = lazy(() => import('./pages/UserPage').then(module => ({ default: module.UserPage })))
+const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })))
 
 function App() {
   return (
@@ -13,7 +16,9 @@ function App() {
         path="/user" 
         element={
           <ProtectedRoute requiredRole="user">
-            <UserPage />
+            <Suspense fallback={<LoadingSpinner />}>
+              <UserPage />
+            </Suspense>
           </ProtectedRoute>
         } 
       />
@@ -22,7 +27,9 @@ function App() {
         path="/user/:questionId" 
         element={
           <ProtectedRoute requiredRole="user">
-            <UserPage />
+            <Suspense fallback={<LoadingSpinner />}>
+              <UserPage />
+            </Suspense>
           </ProtectedRoute>
         } 
       />
@@ -31,7 +38,9 @@ function App() {
         path="/admin" 
         element={
           <ProtectedRoute requiredRole="admin">
-            <AdminPage />
+            <Suspense fallback={<LoadingSpinner />}>
+              <AdminPage />
+            </Suspense>
           </ProtectedRoute>
         } 
       />
@@ -40,7 +49,9 @@ function App() {
         path="/admin/:questionId" 
         element={
           <ProtectedRoute requiredRole="admin">
-            <AdminPage />
+            <Suspense fallback={<LoadingSpinner />}>
+              <AdminPage />
+            </Suspense>
           </ProtectedRoute>
         } 
       />

@@ -24,7 +24,16 @@ export function AnswerForm({ onSubmit, isLoading }: AnswerFormProps) {
     await onSubmit(message, files)
     setMessage('')
     setFiles([])
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = Array.from(e.target.files || [])
+    setFiles(prev => [...prev, ...newFiles])
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index))
   }
 
   return (
@@ -53,13 +62,23 @@ export function AnswerForm({ onSubmit, isLoading }: AnswerFormProps) {
           type="file"
           multiple
           ref={fileInputRef}
-          onChange={(e) => setFiles(Array.from(e.target.files || []))}
+          onChange={handleFileChange}
           className="file-input"
         />
         {files.length > 0 && (
           <ul className="file-list">
             {files.map((f, i) => (
-              <li key={i}>{f.name}</li>
+              <li key={i}>
+                {f.name}
+                <button
+                  type="button"
+                  className="remove-file-btn"
+                  onClick={() => removeFile(i)}
+                  aria-label="Удалить файл"
+                >
+                  ✕
+                </button>
+              </li>
             ))}
           </ul>
         )}

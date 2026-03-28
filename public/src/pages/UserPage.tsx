@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { apiService } from '../services/api'
@@ -7,6 +7,7 @@ import type { Question, NewQuestionForm } from '../types'
 import { QuestionCard } from '../components/QuestionCard'
 import { QuestionDetails } from '../components/QuestionDetails'
 import { QuestionForm } from '../components/QuestionForm'
+import { Modal } from '../components/Modal'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { SuccessNotification } from '../components/SuccessNotification'
@@ -22,8 +23,23 @@ export function UserPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
+  const [showAnswered, setShowAnswered] = useState(true)
 
-  const loadQuestions = async () => {
+  // Фильтруем вопросы по настройкам
+  const filteredQuestions = useMemo(() => {
+    return questions.filter(q => {
+      // Фильтр архивных
+      if (!showArchived && q.status === 'closed') return false
+      // Фильтр отвеченных
+      if (!showAnswered && q.status === 'answered') return false
+      return true
+    })
+  }, [questions, showArchived, showAnswered])
+
+  const loadQuestions = useCallback(async () => {
+    const abortController = new AbortController()
+    
     try {
       setIsLoading(true)
       setError(null)
@@ -33,6 +49,9 @@ export function UserPage() {
         apiService.getAllQuestions(),
         apiService.getAllAnswers()
       ])
+      
+      // Проверяем, не был ли запрос отменен
+      if (abortController.signal.aborted) return
       
       // Фильтруем вопросы пользователя
       const userQuestions = allQuestions.filter(q => q.email === user?.sub)
@@ -46,20 +65,17 @@ export function UserPage() {
       // Сортируем вопросы
       const sortedQuestions = sortQuestions(questionsWithAnswers)
       setQuestions(sortedQuestions)
-      
-      // Обновляем выбранное обращение, если оно было выбрано
-      if (selectedQuestion) {
-        const updated = questionsWithAnswers.find(q => q.id === selectedQuestion.id)
-        if (updated) {
-          setSelectedQuestion(updated)
-        }
-      }
     } catch (err) {
+      if (abortController.signal.aborted) return
       setError(err instanceof Error ? err.message : 'Ошибка загрузки обращений')
     } finally {
-      setIsLoading(false)
+      if (!abortController.signal.aborted) {
+        setIsLoading(false)
+      }
     }
-  }
+    
+    return () => abortController.abort()
+  }, [user])
 
   useEffect(() => {
     loadQuestions()
@@ -70,7 +86,7 @@ export function UserPage() {
     }, 30000)
     
     return () => clearInterval(interval)
-  }, [user])
+  }, [loadQuestions])
 
   // Автоматически выбираем вопрос из URL
   useEffect(() => {
@@ -82,7 +98,17 @@ export function UserPage() {
     }
   }, [questionId, questions])
 
-  const handleCreateQuestion = async (form: NewQuestionForm, files: File[]) => {
+  // Обновляем выбранное обращение при изменении списка вопросов
+  useEffect(() => {
+    if (selectedQuestion && questions.length > 0) {
+      const updated = questions.find(q => q.id === selectedQuestion.id)
+      if (updated) {
+        setSelectedQuestion(updated)
+      }
+    }
+  }, [questions])
+
+  const handleCreateQuestion = useCallback(async (form: NewQuestionForm, files: File[]) => {
     try {
       setIsSubmitting(true)
       setError(null)
@@ -96,28 +122,62 @@ export function UserPage() {
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [loadQuestions])
+
+  const handleToggleForm = useCallback(() => {
+    setShowForm(prev => !prev)
+  }, [])
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedQuestion(null)
+  }, [])
+
+  const handleCloseError = useCallback(() => {
+    setError(null)
+  }, [])
+
+  const handleCloseSuccess = useCallback(() => {
+    setSuccessMessage(null)
+  }, [])
+
+  const handleMarkAsResolved = useCallback(async () => {
+    if (!selectedQuestion) return
+    
+    try {
+      setError(null)
+      const response = await apiService.changeQuestionStatus(selectedQuestion.id, 'closed')
+      
+      if (response.message) {
+        setSuccessMessage(response.message)
+      }
+      
+      await loadQuestions()
+      setSelectedQuestion(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка изменения статуса')
+    }
+  }, [selectedQuestion, loadQuestions])
 
   return (
     <div className="user-page">
       {successMessage && (
         <SuccessNotification 
           message={successMessage} 
-          onClose={() => setSuccessMessage(null)} 
+          onClose={handleCloseSuccess} 
         />
       )}
       
       <header className="page-header">
         <h1>Мои обращения</h1>
         <div className="header-actions">
-          <button onClick={() => setShowForm(!showForm)} className="new-button">
+          <button onClick={handleToggleForm} className="new-button">
             {showForm ? 'Отменить' : 'Новое обращение'}
           </button>
           <button onClick={logout} className="logout-button">Выйти</button>
         </div>
       </header>
 
-      {error && <ErrorMessage message={error} onClose={() => setError(null)} />}
+      {error && <ErrorMessage message={error} onClose={handleCloseError} />}
 
       {showForm && (
         <div className="form-section">
@@ -129,45 +189,71 @@ export function UserPage() {
         </div>
       )}
 
-      <div className="page-content">
-        <aside className="sidebar">
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : questions.length === 0 && !showForm ? (
-            <div className="empty-state">
-              <p>У вас пока нет обращений</p>
-              <button onClick={() => setShowForm(true)} className="new-button">
-                Создать первое обращение
-              </button>
+      {!showForm && (
+        <div className="page-content">
+          <div className="filter-section">
+            <div className="user-filters">
+              <label className="filter-toggle">
+                <input
+                  type="checkbox"
+                  checked={showAnswered}
+                  onChange={(e) => setShowAnswered(e.target.checked)}
+                />
+                <span>Показывать отвеченные</span>
+              </label>
+              <label className="filter-toggle">
+                <input
+                  type="checkbox"
+                  checked={showArchived}
+                  onChange={(e) => setShowArchived(e.target.checked)}
+                />
+                <span>Показывать архивные</span>
+              </label>
             </div>
-          ) : questions.length === 0 && showForm ? (
-            <div className="empty-state">
-              <p>У вас пока нет обращений</p>
-            </div>
-          ) : (
-            <div className="questions-list">
-              {questions.map((question) => (
+          </div>
+
+          <div className="questions-grid">
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : filteredQuestions.length === 0 ? (
+              <div className="empty-state">
+                <p>Нет обращений для отображения</p>
+                {questions.length > 0 && (
+                  <p className="filter-hint">Попробуйте изменить настройки фильтров</p>
+                )}
+              </div>
+            ) : (
+              filteredQuestions.map((question) => (
                 <QuestionCard
                   key={question.id}
                   question={question}
                   onClick={() => setSelectedQuestion(question)}
                   isSelected={selectedQuestion?.id === question.id}
                 />
-              ))}
-            </div>
-          )}
-        </aside>
+              ))
+            )}
+          </div>
+        </div>
+      )}
 
-        <main className="main-content">
-          {selectedQuestion ? (
+      <Modal isOpen={selectedQuestion !== null} onClose={handleCloseModal}>
+        {selectedQuestion && (
+          <>
             <QuestionDetails question={selectedQuestion} />
-          ) : (
-            <div className="empty-state">
-              <p>Выберите обращение для просмотра деталей</p>
-            </div>
-          )}
-        </main>
-      </div>
+            {selectedQuestion.status !== 'closed' && (
+              <div className="user-actions">
+                <button 
+                  className="resolve-button"
+                  onClick={handleMarkAsResolved}
+                  type="button"
+                >
+                  Мой вопрос решен
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </Modal>
     </div>
   )
 }
