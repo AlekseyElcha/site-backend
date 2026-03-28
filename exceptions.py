@@ -58,5 +58,9 @@ class S3OperationsError(QuestionsBaseException):
     pass
 
 
-class S3GetAllFilesError(QuestionsBaseException):\
+class S3GetAllFilesError(QuestionsBaseException):
+    pass
+
+
+class NotAdmin(QuestionsBaseException):
     pass

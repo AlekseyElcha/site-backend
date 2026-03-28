@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 
 import jwt
-from fastapi import Depends
+from fastapi import Depends, Request, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from starlette import status
 
-from exceptions import DecodeTokenError
+from exceptions import DecodeTokenError, NotAdmin
 from src.config.settings import settings
 
 encoded_jwt = jwt.encode({"some": "payload"}, "secret", algorithm="HS256")
@@ -65,25 +66,40 @@ def get_current_token_payload(token: str = Depends(oauth2_scheme)):
         raise DecodeTokenError
 
 
-def get_current_user_email_from_token(token: str):
-    try:
-        payload = jwt.decode(
-            token=token,
-            key=settings.auth_jwt.private_key_path,
-            algorithms=settings.auth_jwt.algorithm,
-        )
-        return payload.get("email")
-    except:
-        raise DecodeTokenError
+# def get_current_user_email_from_token(token: str):
+#     try:
+#         payload = jwt.decode(
+#             token=token,
+#             key=settings.auth_jwt.private_key_path,
+#             algorithms=settings.auth_jwt.algorithm,
+#         )
+#         return payload.get("email")
+#     except:
+#         raise DecodeTokenError
 
 
-def get_current_user_role_from_token(token: str):
+# def get_current_user_role_from_token(token: str):
+#     try:
+#         payload = jwt.decode(
+#             token=token,
+#             key=settings.auth_jwt.private_key_path,
+#             algorithms=settings.auth_jwt.algorithm,
+#         )
+#         return payload.get("role")
+#     except:
+#         raise DecodeTokenError
+
+
+def check_admin(request: Request):
+    token = request.cookies.get(settings.auth_jwt.access_cookie_name)
     try:
-        payload = jwt.decode(
-            token=token,
-            key=settings.auth_jwt.private_key_path,
-            algorithms=settings.auth_jwt.algorithm,
-        )
-        return payload.get("role")
+        payload = get_current_token_payload(token=token)
     except:
         raise DecodeTokenError
+    if payload.get("role") == "admin":
+        return True
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Доступно только администраторам."
+        )

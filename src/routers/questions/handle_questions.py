@@ -3,12 +3,11 @@ from email.policy import HTTP
 from typing import Annotated, Optional, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, Request
 from fastapi.params import Body, Form, File
 from pyexpat.errors import messages
 from sqlalchemy import True_
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from exceptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
     SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError
 from src.config.settings import settings
@@ -25,6 +24,7 @@ from src.models.models import Answers
 from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import NewAnswerSchema
 from src.services.email_service import send_notification_with_text
+from src.services.token_service import check_admin
 
 router = APIRouter(
     prefix="/handle_questions",
@@ -74,6 +74,7 @@ async def get_all_answers_for_all_questions(
 async def change_question_status_manually(
         question_id: Annotated[str, Body(embed=True)],
         new_status: Annotated[str, Body(embed=True)],
+        admin: Annotated[bool, Depends(check_admin)],
         session: Annotated[AsyncSession, Depends(get_session)]
 ):
     try:
@@ -90,8 +91,10 @@ async def change_question_status_manually(
 @router.post("/answer_question")
 async def answer_question(
         # answer: NewAnswerSchema
+        request: Request,
         answer: Annotated[str, Form()],
         session: Annotated[AsyncSession, Depends(get_session)],
+        admin: Annotated[bool, Depends(check_admin)],
         files: Optional[List[UploadFile]] = File(default=None),
 ):
     answer_data = NewAnswerSchema.model_validate_json(answer)
