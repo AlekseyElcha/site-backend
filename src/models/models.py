@@ -41,6 +41,7 @@ class Questions(Base):
         cascade="all, delete-orphan"
     )
     files: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=True)
+    comment: Mapped[str] = mapped_column(nullable=False, server_default='')
 
 
 class Answers(Base):
