@@ -78,9 +78,14 @@ async def create_new_answer(
 async def change_question_status(
         question_id: uuid.UUID,
         new_status: str,
+        user_role: str,
         session: AsyncSession,
 ):
-    query = update(Questions).where(Questions.id == question_id).values(status=new_status)
+    if user_role == "user":
+        query = update(Questions).where(Questions.id == question_id) \
+        .values(status=new_status, comment="закрыто пользователем")
+    else:
+        query = update(Questions).where(Questions.id == question_id).values(status=new_status)
     try:
         await session.execute(query)
     except:
