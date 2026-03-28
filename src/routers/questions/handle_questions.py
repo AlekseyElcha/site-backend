@@ -24,7 +24,7 @@ from src.models.models import Answers
 from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import NewAnswerSchema
 from src.services.email_service import send_notification_with_text
-from src.services.token_service import check_admin
+from src.services.token_service import check_admin, get_current_user
 
 router = APIRouter(
     prefix="/handle_questions",
@@ -74,11 +74,12 @@ async def get_all_answers_for_all_questions(
 async def change_question_status_manually(
         question_id: Annotated[str, Body(embed=True)],
         new_status: Annotated[str, Body(embed=True)],
-        admin: Annotated[bool, Depends(check_admin)],
+        user_data: Annotated[dict, Depends(get_current_user)],
         session: Annotated[AsyncSession, Depends(get_session)]
 ):
+    user_role = user_data.get("role")
     try:
-        await change_question_status(question_id, new_status, session)
+        await change_question_status(question_id, new_status, user_role, session)
     except UpdateQuestionStatusError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
