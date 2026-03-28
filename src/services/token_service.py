@@ -103,3 +103,12 @@ def check_admin(request: Request):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Доступно только администраторам."
         )
+
+
+def get_current_user(request: Request):
+    token = request.cookies.get(settings.auth_jwt.access_cookie_name)
+    try:
+        payload = get_current_token_payload(token=token)
+        return payload
+    except:
+        raise DecodeTokenError
