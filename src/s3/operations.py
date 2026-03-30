@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from exceptions import S3GetAllFilesError, BasicOperationDatabaseError
 from src.config.settings import settings
 from src.database.db import get_session
-from src.models.models import Questions
+from src.models.models import Questions, Answers
 
 s3 = boto3.client(
    service_name='s3',
@@ -115,10 +115,9 @@ def find_names_for_single_file(
     return None
 
 
-async def get_filenames_by_question_id(question_id: str, session: AsyncSession):
+async def get_filenames_by_question_id_question(question_id: str, session: AsyncSession):
     query = select(Questions.files).where(Questions.id == question_id)
     try:
-        await session.execute(query)
         results = await session.execute(query)
         filenames = results.scalars().first()
         return filenames
@@ -126,8 +125,17 @@ async def get_filenames_by_question_id(question_id: str, session: AsyncSession):
         raise BasicOperationDatabaseError
 
 
+async def get_filenames_by_question_id_answer(question_id: str, session: AsyncSession):
+    query = select(Answers.files).where(Answers.question_id == question_id)
+    try:
+        results = await session.execute(query)
+        filenames = results.scalars().first()
+        return filenames
+    except:
+        raise BasicOperationDatabaseError
 
-@router.put("/download_all_files/{question_uuid}")
+
+@router.put("/download_all_files_for_question/{question_uuid}")
 async def download_multiple_files(
         question_uuid: str,
         session: Annotated[AsyncSession, Depends(get_session)],
@@ -138,7 +146,30 @@ async def download_multiple_files(
     #         status.HTTP_404_NOT_FOUND,
     #         detail="Файлы не были найдены."
     #     )
-    filenames = await get_filenames_by_question_id(question_uuid, session)
+    filenames = await get_filenames_by_question_id_question(question_uuid, session)
+    urls = []
+    for filename in filenames:
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": settings.s3.container, "Key": filename},
+            ExpiresIn=settings.s3.url_expiration,
+        )
+        urls.append(url)
+    return urls
+
+
+@router.put("/download_all_files_for_answer/{question_uuid}")
+async def download_multiple_files(
+        question_uuid: str,
+        session: Annotated[AsyncSession, Depends(get_session)],
+):
+    # filenames = find_names_for_multiple_files(question_uuid)
+    # if not filenames:
+    #     raise HTTPException(
+    #         status.HTTP_404_NOT_FOUND,
+    #         detail="Файлы не были найдены."
+    #     )
+    filenames = await get_filenames_by_question_id_answer(question_uuid, session)
     urls = []
     for filename in filenames:
         url = s3.generate_presigned_url(
