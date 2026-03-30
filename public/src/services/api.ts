@@ -128,8 +128,16 @@ class APIService {
     return this.handleResponse<Answer[]>(response)
   }
 
-  async downloadAllFiles(questionId: string): Promise<string[]> {
-    const response = await fetch(`${this.baseURL}/files/download_all_files/${questionId}`, {
+  async downloadAllFilesForQuestion(questionId: string): Promise<string[]> {
+    const response = await fetch(`${this.baseURL}/files/download_all_files_for_question/${questionId}`, {
+      method: 'PUT',
+      credentials: 'include'
+    })
+    return this.handleResponse<string[]>(response)
+  }
+
+  async downloadAllFilesForAnswer(questionId: string): Promise<string[]> {
+    const response = await fetch(`${this.baseURL}/files/download_all_files_for_answer/${questionId}`, {
       method: 'PUT',
       credentials: 'include'
     })

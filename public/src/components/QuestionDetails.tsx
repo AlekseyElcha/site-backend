@@ -50,7 +50,7 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
       <section className="question-details-message">
         <h3 className="message-title">Ваше сообщение:</h3>
         <p className="message-text">{question.message}</p>
-        <FileList files={question.files} questionId={question.id} />
+        <FileList files={question.files} questionId={question.id} isAnswer={false} />
       </section>
 
       {question.comment && (
@@ -77,7 +77,7 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
                   </time>
                 </div>
                 <p className="answer-message">{answer.message}</p>
-                <FileList files={answer.files} questionId={answer.question_id} />
+                <FileList files={answer.files} questionId={answer.question_id} isAnswer={true} />
               </article>
             ))}
           </div>

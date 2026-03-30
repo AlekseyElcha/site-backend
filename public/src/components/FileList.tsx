@@ -6,9 +6,10 @@ import './FileList.css'
 interface FileListProps {
   files: string[]
   questionId: string
+  isAnswer?: boolean  // true если это файлы из ответа, false если из вопроса
 }
 
-export function FileList({ files, questionId }: FileListProps) {
+export function FileList({ files, questionId, isAnswer = false }: FileListProps) {
   const [isDownloading, setIsDownloading] = useState(false)
 
   if (!files || files.length === 0) return null
@@ -34,7 +35,10 @@ export function FileList({ files, questionId }: FileListProps) {
   const handleDownloadAll = async () => {
     try {
       setIsDownloading(true)
-      const urls = await apiService.downloadAllFiles(questionId)
+      // Используем разные эндпоинты в зависимости от типа файлов
+      const urls = isAnswer 
+        ? await apiService.downloadAllFilesForAnswer(questionId)
+        : await apiService.downloadAllFilesForQuestion(questionId)
       
       // Создаём ZIP-архив
       const zip = new JSZip()
