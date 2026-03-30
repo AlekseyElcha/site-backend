@@ -156,6 +156,7 @@ async def answer_question(
     try:
         await change_question_status(
             question_id=answer_data.question_id,
+            user_role="admin",
             new_status="answered",
             session=session
         )
