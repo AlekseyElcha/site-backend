@@ -22,6 +22,16 @@ export interface Answer {
   files: string[]    // имена файлов
 }
 
+// Дополнительное сообщение к обращению
+export interface ExtraMessage {
+  id: string
+  date: string       // формат: YYYY-MM-DD
+  time: string       // формат: HH:MM:SS
+  message: string
+  question_id: string
+  files: string[]    // имена файлов
+}
+
 // Обращение пользователя
 export interface Question {
   id: string
@@ -36,6 +46,7 @@ export interface Question {
   answers: Answer[]
   files: string[]    // имена файлов
   comment?: string   // системный комментарий (опционально)
+  extra_messages?: ExtraMessage[]  // дополнительные сообщения (опционально)
 }
 
 // Форма создания нового обращения
@@ -51,6 +62,12 @@ export interface NewQuestionForm {
 export interface NewAnswerData {
   message: string
   question_id: string
+}
+
+// Данные для создания дополнительного сообщения
+export interface NewExtraMessageData {
+  question_id: string
+  message: string
 }
 
 // Результат валидации формы

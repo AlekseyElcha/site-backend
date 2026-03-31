@@ -198,7 +198,7 @@ export function AdminPage() {
       <Modal isOpen={selectedQuestion !== null} onClose={handleCloseModal}>
         {selectedQuestion && (
           <>
-            <QuestionDetails question={selectedQuestion} />
+            <QuestionDetails question={selectedQuestion} onRefresh={loadQuestions} />
             
             <div className="admin-actions">
               <div className="status-change">

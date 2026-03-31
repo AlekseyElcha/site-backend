@@ -102,6 +102,21 @@ class APIService {
     return this.handleResponse<{ message: string }>(response)
   }
 
+  async createExtraMessage(questionId: string, message: string, files?: File[]): Promise<{ message: string }> {
+    const formData = new FormData()
+    formData.append('question_id', questionId)
+    formData.append('message', JSON.stringify({ question_id: questionId, message }))
+    if (files && files.length > 0) {
+      files.forEach(file => formData.append('files', file))
+    }
+    const response = await fetch(`${this.baseURL}/handle_questions/create_extra_message`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    })
+    return this.handleResponse<{ message: string }>(response)
+  }
+
   async changeQuestionStatus(questionId: string, newStatus: string): Promise<{ message: string }> {
     const response = await fetch(`${this.baseURL}/handle_questions/change_question_status`, {
       method: 'PUT',

@@ -1,13 +1,15 @@
 import type { Question } from '../types'
 import { formatDate, formatTime, getStatusLabel, getStatusColor } from '../utils/formatting'
 import { FileList } from './FileList'
+import { ExtraMessageForm } from './ExtraMessageForm'
 import './QuestionDetails.css'
 
 interface QuestionDetailsProps {
   question: Question
+  onRefresh: () => void
 }
 
-export function QuestionDetails({ question }: QuestionDetailsProps) {
+export function QuestionDetails({ question, onRefresh }: QuestionDetailsProps) {
   return (
     <article className="question-details" aria-labelledby="modal-title">
       <div className="question-details-header">
@@ -83,6 +85,29 @@ export function QuestionDetails({ question }: QuestionDetailsProps) {
           </div>
         )}
       </section>
+
+      {question.extra_messages && question.extra_messages.length > 0 && (
+        <section className="question-extra-messages" aria-label="Дополнительные сообщения">
+          <h3 className="extra-messages-title">
+            Дополнительные сообщения: ({question.extra_messages.length})
+          </h3>
+          <div className="extra-messages-list">
+            {question.extra_messages.map((msg) => (
+              <article key={msg.id} className="extra-message-item">
+                <div className="extra-message-header">
+                  <time className="extra-message-date" dateTime={`${msg.date}T${msg.time}`}>
+                    {formatDate(msg.date, msg.time)} {formatTime(msg.date, msg.time)}
+                  </time>
+                </div>
+                <p className="extra-message-text">{msg.message}</p>
+                <FileList files={msg.files} questionId={msg.question_id} isAnswer={false} />
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <ExtraMessageForm questionId={question.id} onSuccess={onRefresh} />
     </article>
   )
 }

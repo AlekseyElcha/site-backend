@@ -239,7 +239,7 @@ export function UserPage() {
       <Modal isOpen={selectedQuestion !== null} onClose={handleCloseModal}>
         {selectedQuestion && (
           <>
-            <QuestionDetails question={selectedQuestion} />
+            <QuestionDetails question={selectedQuestion} onRefresh={loadQuestions} />
             {selectedQuestion.status !== 'closed' && (
               <div className="user-actions">
                 <button 
