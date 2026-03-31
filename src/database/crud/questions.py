@@ -8,11 +8,11 @@ from datetime import time, timezone
 
 from exceptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNewAnswerError, \
     GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError, \
-    BasicOperationDatabaseError
+    BasicOperationDatabaseError, CreateNewExtraMessageError
 from src.database.services.auxiliary import get_user_email_by_question_id
 from src.services.email_service import send_answer_email_autocreated_by_question_id
-from src.models.models import Questions, Answers
-from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema
+from src.models.models import Questions, Answers, ExtraMessages
+from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema, NewExtraMessageSchema
 
 
 async def create_new_question(
@@ -133,3 +133,23 @@ async def get_question_by_uuid(question_uuid: str, session: AsyncSession):
         return result
     except:
         raise BasicOperationDatabaseError
+
+
+async def create_extra_message_for_question(
+        question: NewExtraMessageSchema,
+        unique_id: UUID,
+        session: AsyncSession,
+):
+    new_message = ExtraMessages(
+        question_id=unique_id,
+        message=question.message,
+        files=question.files,
+    )
+    try:
+        session.add(new_message)
+        await session.commit()
+        await session.refresh(new_message)
+    except:
+        raise CreateNewExtraMessageError
+    return True
+
