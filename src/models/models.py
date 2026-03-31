@@ -66,6 +66,25 @@ class Answers(Base):
     files: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=True)
 
 
+class ExtraMessages(Base):
+    __tablename__ = "extra_messages"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        SQLAUUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()")
+    )
+    date: Mapped[date] = mapped_column(Date, server_default=text("CURRENT_DATE"))
+    time: Mapped[time] = mapped_column(Time, server_default=text("CURRENT_TIME"))
+    question_id: Mapped[uuid.UUID] = mapped_column(
+        SQLAUUID(as_uuid=True),
+        ForeignKey("questions.id", ondelete="CASCADE"),  # Важно!
+        nullable=False
+    )
+    files: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=True)
+    message: Mapped[str] = mapped_column(nullable=False, server_default='')
+
+
 class EmailVerification(Base):
     __tablename__ = "email_verification"
 
