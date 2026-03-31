@@ -87,7 +87,6 @@ async def create_question(
             )
             await asyncio.sleep(5)
             try:
-                print(question_data)
                 await send_notification_with_text(
                     email=question_data.email.lower(),
                     subject="ООО «Домофон-сервис». Уведомление о создании обращения",
@@ -105,17 +104,36 @@ async def create_question(
         if not success:
             logger.warning("{} RETRIES UNSUCCESSFUL.".format(retries_count))
     try:
-        print(question_data)
         await send_notification_with_text(
             email=settings.email.from_address.lower(),
             subject="Уведомление о новом обращении на платформе",
-            message=f"Было создано новое обращение на платформе.\n"
-                    f"Ссылка на обращение: http://localhost:3000/admin/{unique_id}\n\n"
-                    f"Базовая информация об обращении:\n"
-                    f"{question_data}"
+            message=settings.business.format_message_text_for_admins(
+                unique_id, question_data
+            )
         )
     except:
-        print("Ошибка при отправке нотификации admin, но вопрос создан")
+        success = False
+        logger.warning("ERROR WHILE SENDING QUESTION CREATED TO ADMIN. RETRYING AFTER 5 SEC.")
+        await asyncio.sleep(5)
+        retries_count = settings.email.retries_for_sending_messages
+        for retry in range(retries_count):
+            try:
+                await send_notification_with_text(
+                    email=settings.email.from_address.lower(),
+                    subject="Уведомление о новом обращении на платформе",
+                    message=settings.business.format_message_text_for_admins(
+                        unique_id, question_data
+                    )
+                )
+                success = True
+            except SendEmailError:
+                logger.warning(
+                    "RETRY {} UNSUCCESSFUL. RETRYING AFTER 5 SECONDS".format(retry+1)
+                )
+            if not success:
+                logger.warning("{} RETRIES UNSUCCESSFUL.".format(retries_count))
+
+
     return {
         "message": "Вопрос успешно создан."
     }

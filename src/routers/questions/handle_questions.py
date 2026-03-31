@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import uuid
 from email.policy import HTTP
 from typing import Annotated, Optional, List
@@ -9,22 +11,30 @@ from pyexpat.errors import messages
 from sqlalchemy import True_
 from sqlalchemy.ext.asyncio import AsyncSession
 from exceptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
-    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError
+    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError, \
+    CreateNewExtraMessageError
 from src.config.settings import settings
 from src.database.crud.questions import (
     get_all_questions_from_db,
     change_question_status,
     get_answers_for_questions,
     get_answers_for_question_by_uuid,
-    create_new_answer,
+    create_new_answer, create_extra_message_for_question,
 )
 from src.database.db import get_session
 from src.database.services.auxiliary import get_user_email_by_question_id
 from src.models.models import Answers
 from src.s3.operations import upload_multiple_files
-from src.schemas.schemas import NewAnswerSchema
+from src.schemas.schemas import NewAnswerSchema, NewExtraMessageSchema
 from src.services.email_service import send_notification_with_text
 from src.services.token_service import check_admin, get_current_user
+
+logging.basicConfig(
+    level=settings.logs.level,
+    datefmt=settings.logs.datefmt,
+    format=settings.logs.format,
+)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/handle_questions",
@@ -168,4 +178,79 @@ async def answer_question(
     return {
         "message": f"Ответ на вопрос {answer_data.question_id} успешно создан и отправлен. "
                    f"Статус вопроса был автоматически обновлён до «Отвечено»."
+    }
+
+
+
+@router.post("/create_extra_message")
+async def add_extra_message_to_question(
+        request: Request,
+        question_id: Annotated[UUID, Body(embed=True)],
+        message: Annotated[str, Body(embed=True)],
+        files: Optional[List[UploadFile]] = File(default=None),
+        session: AsyncSession = Depends(get_session),
+):
+    message_data = NewExtraMessageSchema.model_validate_json(message)
+    unique_id = uuid.uuid4()
+    filenames = []
+    if files:
+        for file in files:
+            old_filename = file.filename
+            new_filename = (f"{old_filename}_"
+                            f"{unique_id}.{old_filename.split('.')[-1]}")
+            filenames.append(new_filename)
+            file.filename = new_filename
+        message_data.files = filenames
+    # try:
+    await create_extra_message_for_question(message_data, unique_id, session)
+    # except CreateNewExtraMessageError:
+    #     logger.warning("ERROR WHILE CREATING NEW QUESTION")
+    #     raise HTTPException(
+    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         detail="Произошла ошибка при создании вопроса.",
+    #     )
+    if files:
+        try:
+            await upload_multiple_files(
+                files=files,
+                question_uuid=unique_id,
+            )
+        except Exception as e:
+            logger.warning("ERROR WHILE UPLOADING FILES {}".format(e))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Ошибка при загрузке!"
+            )
+    try:
+        await send_notification_with_text(
+            email=settings.email.from_address.lower(),
+            subject="Уведомление о новом сообщении",
+            message=settings.business.format_message_text_for_admins(
+                unique_id, message_data
+            )
+        )
+    except:
+        success = False
+        logger.warning("ERROR WHILE SENDING QUESTION CREATED TO ADMIN. RETRYING AFTER 5 SEC.")
+        await asyncio.sleep(5)
+        retries_count = settings.email.retries_for_sending_messages
+        for retry in range(retries_count):
+            try:
+                await send_notification_with_text(
+                    email=settings.email.from_address.lower(),
+                    subject="Уведомление о новом сообщении",
+                    message=settings.business.format_extra_message_text(
+                        unique_id, message_data
+                    )
+                )
+                success = True
+            except SendEmailError:
+                logger.warning(
+                    "RETRY {} UNSUCCESSFUL. RETRYING AFTER 5 SECONDS".format(retry + 1)
+                )
+            if not success:
+                logger.warning("{} RETRIES UNSUCCESSFUL.".format(retries_count))
+
+    return {
+        "message": "Вопрос успешно создан."
     }
