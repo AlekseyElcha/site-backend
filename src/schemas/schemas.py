@@ -21,6 +21,12 @@ class NewQuestionSchema(BaseModel):
     files: Optional[List[str]] = None
 
 
+class NewExtraMessageSchema(BaseModel):
+    question_id: str
+    message: str
+    files: Optional[List[str]] = None
+
+
 class NewAnswerSchema(BaseModel):
     message: str
     question_id: str
