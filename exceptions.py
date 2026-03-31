@@ -64,3 +64,7 @@ class S3GetAllFilesError(QuestionsBaseException):
 
 class NotAdmin(QuestionsBaseException):
     pass
+
+
+class CreateNewExtraMessageError(QuestionsBaseException):
+    pass
