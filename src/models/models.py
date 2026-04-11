@@ -57,7 +57,7 @@ class Answers(Base):
     message: Mapped[str] = mapped_column(nullable=False, default="")
     question_id: Mapped[uuid.UUID] = mapped_column(
         SQLAUUID(as_uuid=True),
-        ForeignKey("questions.id", ondelete="CASCADE"),  # Важно!
+        ForeignKey("questions.id", ondelete="CASCADE"),
         nullable=False
     )
     question: Mapped["Questions"] = relationship(
@@ -78,7 +78,7 @@ class ExtraMessages(Base):
     time: Mapped[time] = mapped_column(Time, server_default=text("CURRENT_TIME"))
     question_id: Mapped[uuid.UUID] = mapped_column(
         SQLAUUID(as_uuid=True),
-        ForeignKey("questions.id", ondelete="CASCADE"),  # Важно!
+        ForeignKey("questions.id", ondelete="CASCADE"),
         nullable=False
     )
     files: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=True)

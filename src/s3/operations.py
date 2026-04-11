@@ -4,7 +4,7 @@ from typing import List, Annotated
 import boto3
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from fastapi.params import Depends, Body
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions import S3GetAllFilesError, BasicOperationDatabaseError
@@ -116,20 +116,20 @@ def find_names_for_single_file(
 
 
 async def get_filenames_by_question_id_question(question_id: str, session: AsyncSession):
-    query = select(Questions.files).where(Questions.id == question_id)
+    query = select(func.unnest(Questions.files)).where(Questions.id == question_id)
     try:
         results = await session.execute(query)
-        filenames = results.scalars().first()
+        filenames = results.scalars().all()
         return filenames
     except:
         raise BasicOperationDatabaseError
 
 
 async def get_filenames_by_question_id_answer(question_id: str, session: AsyncSession):
-    query = select(Answers.files).where(Answers.question_id == question_id)
+    query = select(func.unnest(Answers.files)).where(Answers.question_id == question_id)
     try:
         results = await session.execute(query)
-        filenames = results.scalars().first()
+        filenames = results.scalars().all()
         return filenames
     except:
         raise BasicOperationDatabaseError

@@ -135,13 +135,22 @@ async def get_question_by_uuid(question_uuid: str, session: AsyncSession):
         raise BasicOperationDatabaseError
 
 
+async def get_extra_messages_for_question(question_uuid: str, session: AsyncSession):
+    query = select(ExtraMessages).where(ExtraMessages.question_id == question_uuid)
+    try:
+        data = await session.execute(query)
+        result = data.scalars().all()
+        return result
+    except:
+        raise BasicOperationDatabaseError
+
+
 async def create_extra_message_for_question(
         question: NewExtraMessageSchema,
-        unique_id: UUID,
         session: AsyncSession,
 ):
     new_message = ExtraMessages(
-        question_id=unique_id,
+        question_id=question.question_id,
         message=question.message,
         files=question.files,
     )

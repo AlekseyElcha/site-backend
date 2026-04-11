@@ -1,14 +1,16 @@
 import asyncio
+import json
 import logging
 import uuid
 from email.policy import HTTP
 from typing import Annotated, Optional, List
 from uuid import UUID
 
+import redis
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, Request
-from fastapi.params import Body, Form, File
+from fastapi.params import Body, Form, File, Query
 from pyexpat.errors import messages
-from sqlalchemy import True_
+from sqlalchemy import True_, select, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from exceptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
     SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError, \
@@ -19,11 +21,13 @@ from src.database.crud.questions import (
     change_question_status,
     get_answers_for_questions,
     get_answers_for_question_by_uuid,
-    create_new_answer, create_extra_message_for_question,
+    create_new_answer, create_extra_message_for_question, get_question_by_uuid, get_extra_messages_for_question,
 )
+
 from src.database.db import get_session
 from src.database.services.auxiliary import get_user_email_by_question_id
-from src.models.models import Answers
+from src.models.models import Answers, Questions
+from src.redis.get_redis import get_redis
 from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import NewAnswerSchema, NewExtraMessageSchema
 from src.services.email_service import send_notification_with_text
@@ -40,6 +44,8 @@ router = APIRouter(
     prefix="/handle_questions",
     tags=["questions"],
 )
+
+redis_client = get_redis()
 
 @router.get("/all_questions")
 async def get_all_questions(session: Annotated[AsyncSession, Depends(get_session)]):
@@ -181,7 +187,6 @@ async def answer_question(
     }
 
 
-
 @router.post("/create_extra_message")
 async def add_extra_message_to_question(
         request: Request,
@@ -202,7 +207,7 @@ async def add_extra_message_to_question(
             file.filename = new_filename
         message_data.files = filenames
     # try:
-    await create_extra_message_for_question(message_data, unique_id, session)
+    await create_extra_message_for_question(message_data, session)
     # except CreateNewExtraMessageError:
     #     logger.warning("ERROR WHILE CREATING NEW QUESTION")
     #     raise HTTPException(
@@ -252,5 +257,83 @@ async def add_extra_message_to_question(
                 logger.warning("{} RETRIES UNSUCCESSFUL.".format(retries_count))
 
     return {
-        "message": "Вопрос успешно создан."
+        "message": "Сообщение успешно создано."
     }
+
+
+@router.get("/question_data/{question_id}")
+async def get_all_data_for_question(
+        request: Request,
+        question_id: str,
+        session: AsyncSession = Depends(get_session),
+):
+    try:
+        question = await get_question_by_uuid(question_id, session)
+        answers = await get_answers_for_question_by_uuid(question_id, session)
+        extra_messages = await get_extra_messages_for_question(question_id, session)
+    except BasicOperationDatabaseError:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при получении данных."
+        )
+    return {
+        "question": question,
+        "answers": answers,
+        "extra_messages": extra_messages
+    }
+
+
+@router.get("/question_filter")
+async def filter_questions(
+    req: str = Query(None, min_length=1, max_length=100),
+    session: AsyncSession = Depends(get_session),
+):
+    cache_key = f"question_filter:{req}"
+    try:
+        cached_data = await redis_client.get(cache_key)
+        if cached_data:
+            return json.loads(cached_data)
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при получении закешированных данных."
+        )
+    query = select(Questions)
+    try:
+        query = query.where(
+            Questions.name.ilike(f"%{req}%") |
+            Questions.surname.ilike(f"%{req}%") | Questions.email.ilike(f"%{req}%") |
+            Questions.address.ilike(f"%{req}%") | Questions.message.ilike(f"%{req}%")
+        )
+        data = await session.execute(query)
+        results = data.scalars().all()
+        serializable_results = []
+        for item in results:
+            serializable_results.append(
+                {
+                    "id": str(item.id),
+                    "name": item.name,
+                    "surname": item.surname,
+                    "email": item.email,
+                    "address": item.address,
+                    "message": item.message,
+                    "date": (
+                        item.date.isoformat()
+                        if hasattr(item, "date") and item.date
+                        else None
+                    ),
+                    "time": (
+                        str(item.time) if hasattr(item, "time") and item.time else None
+                    ),
+                    "status": item.status if hasattr(item, "status") else None,
+                }
+            )
+        if serializable_results:
+            await redis_client.setex(cache_key, settings.redis.expiration_seconds, json.dumps(serializable_results, ensure_ascii=False))
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка сервера."
+        )
+
+    return serializable_results
