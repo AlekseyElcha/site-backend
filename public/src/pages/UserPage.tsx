@@ -44,11 +44,8 @@ export function UserPage() {
       setIsLoading(true)
       setError(null)
       
-      // Загружаем вопросы и ответы параллельно
-      const [allQuestions, allAnswers] = await Promise.all([
-        apiService.getAllQuestions(),
-        apiService.getAllAnswers()
-      ])
+      // Загружаем только список вопросов
+      const allQuestions = await apiService.getAllQuestions()
       
       // Проверяем, не был ли запрос отменен
       if (abortController.signal.aborted) return
@@ -56,14 +53,8 @@ export function UserPage() {
       // Фильтруем вопросы пользователя
       const userQuestions = allQuestions.filter(q => q.email === user?.sub)
       
-      // Объединяем вопросы с их ответами
-      const questionsWithAnswers = userQuestions.map(question => ({
-        ...question,
-        answers: allAnswers.filter(answer => answer.question_id === question.id)
-      }))
-      
       // Сортируем вопросы
-      const sortedQuestions = sortQuestions(questionsWithAnswers)
+      const sortedQuestions = sortQuestions(userQuestions)
       setQuestions(sortedQuestions)
     } catch (err) {
       if (abortController.signal.aborted) return
@@ -93,20 +84,26 @@ export function UserPage() {
     if (questionId && questions.length > 0) {
       const question = questions.find(q => q.id === questionId)
       if (question) {
-        setSelectedQuestion(question)
+        loadQuestionDetails(question.id)
       }
     }
   }, [questionId, questions])
 
-  // Обновляем выбранное обращение при изменении списка вопросов
-  useEffect(() => {
-    if (selectedQuestion && questions.length > 0) {
-      const updated = questions.find(q => q.id === selectedQuestion.id)
-      if (updated) {
-        setSelectedQuestion(updated)
+  // Загружаем полные данные по вопросу
+  const loadQuestionDetails = useCallback(async (qId: string) => {
+    try {
+      const data = await apiService.getQuestionData(qId)
+      // Объединяем данные в формат Question
+      const fullQuestion: Question = {
+        ...data.question,
+        answers: data.answers,
+        extra_messages: data.extra_messages
       }
+      setSelectedQuestion(fullQuestion)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка загрузки деталей обращения')
     }
-  }, [questions])
+  }, [])
 
   const handleCreateQuestion = useCallback(async (form: NewQuestionForm, files: File[]) => {
     try {
@@ -227,7 +224,7 @@ export function UserPage() {
                 <QuestionCard
                   key={question.id}
                   question={question}
-                  onClick={() => setSelectedQuestion(question)}
+                  onClick={() => loadQuestionDetails(question.id)}
                   isSelected={selectedQuestion?.id === question.id}
                 />
               ))

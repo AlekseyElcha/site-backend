@@ -1,4 +1,4 @@
-import type { UserInfo, Question, NewQuestionForm, NewAnswerData, Answer } from '../types'
+import type { UserInfo, Question, NewQuestionForm, NewAnswerData, Answer, QuestionData } from '../types'
 
 class APIService {
   private baseURL: string
@@ -141,6 +141,14 @@ class APIService {
       credentials: 'include'
     })
     return this.handleResponse<Answer[]>(response)
+  }
+
+  async getQuestionData(questionId: string): Promise<QuestionData> {
+    const response = await fetch(`${this.baseURL}/handle_questions/question_data/${questionId}`, {
+      method: 'GET',
+      credentials: 'include'
+    })
+    return this.handleResponse<QuestionData>(response)
   }
 
   async downloadAllFilesForQuestion(questionId: string): Promise<string[]> {

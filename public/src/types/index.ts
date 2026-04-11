@@ -19,7 +19,7 @@ export interface Answer {
   time: string       // формат: HH:MM:SS
   message: string
   question_id: string
-  files: string[]    // имена файлов
+  files: string[] | null    // имена файлов (может быть null)
 }
 
 // Дополнительное сообщение к обращению
@@ -29,7 +29,7 @@ export interface ExtraMessage {
   time: string       // формат: HH:MM:SS
   message: string
   question_id: string
-  files: string[]    // имена файлов
+  files: string[] | null    // имена файлов (может быть null)
 }
 
 // Обращение пользователя
@@ -68,6 +68,13 @@ export interface NewAnswerData {
 export interface NewExtraMessageData {
   question_id: string
   message: string
+}
+
+// Полные данные по вопросу (новый эндпоинт)
+export interface QuestionData {
+  question: Omit<Question, 'answers' | 'extra_messages'>
+  answers: Answer[]
+  extra_messages: ExtraMessage[]
 }
 
 // Результат валидации формы

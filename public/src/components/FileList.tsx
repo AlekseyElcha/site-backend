@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import JSZip from 'jszip'
 import { apiService } from '../services/api'
 import './FileList.css'
 
@@ -14,59 +13,31 @@ export function FileList({ files, questionId, isAnswer = false }: FileListProps)
 
   if (!files || files.length === 0) return null
 
-  const downloadFile = async (url: string, fileName: string) => {
-    try {
-      const response = await fetch(url)
-      const blob = await response.blob()
-      const blobUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = blobUrl
-      link.download = fileName
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(blobUrl)
-    } catch {
-      // Если fetch не работает (CORS), открываем в новой вкладке
-      window.open(url, '_blank')
-    }
-  }
-
   const handleDownloadAll = async () => {
     try {
       setIsDownloading(true)
+      
       // Используем разные эндпоинты в зависимости от типа файлов
       const urls = isAnswer 
         ? await apiService.downloadAllFilesForAnswer(questionId)
         : await apiService.downloadAllFilesForQuestion(questionId)
       
-      // Создаём ZIP-архив
-      const zip = new JSZip()
-      
-      // Загружаем все файлы и добавляем в архив
-      for (let i = 0; i < urls.length; i++) {
-        try {
-          const response = await fetch(urls[i])
-          const blob = await response.blob()
-          const fileName = files[i] || `file-${i}`
-          zip.file(fileName, blob)
-        } catch (error) {
-          console.error(`Ошибка загрузки файла ${files[i]}:`, error)
-        }
+      if (!urls || urls.length === 0) {
+        alert('Нет файлов для скачивания')
+        return
       }
       
-      // Генерируем ZIP и скачиваем
-      const zipBlob = await zip.generateAsync({ type: 'blob' })
-      const zipUrl = window.URL.createObjectURL(zipBlob)
-      const link = document.createElement('a')
-      link.href = zipUrl
-      link.download = `files-${questionId}.zip`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(zipUrl)
-    } catch {
-      // silent
+      // Скачиваем файлы по очереди, открывая в новых вкладках
+      for (let i = 0; i < urls.length; i++) {
+        // Небольшая задержка между открытием вкладок
+        if (i > 0) {
+          await new Promise(resolve => setTimeout(resolve, 300))
+        }
+        window.open(urls[i], '_blank')
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки файлов:', error)
+      alert(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
     } finally {
       setIsDownloading(false)
     }
@@ -75,18 +46,36 @@ export function FileList({ files, questionId, isAnswer = false }: FileListProps)
   const handleDownloadFile = async (fileName: string) => {
     try {
       const url = await apiService.downloadFileByName(fileName)
-      await downloadFile(url, fileName)
-    } catch {
-      // silent
+      // Открываем URL в новой вкладке - браузер сам скачает файл
+      window.open(url, '_blank')
+    } catch (error) {
+      console.error('Ошибка скачивания файла:', error)
+      alert(`Ошибка скачивания: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`)
     }
   }
 
-  // Показываем оригинальное имя: убираем суффикс _uuid.расширение
+  // Показываем оригинальное имя: убираем суффикс _uuid.расширение или _uuid_answer.расширение
   const displayName = (fileName: string) => {
-    // Формат: originalname_uuid.ext
+    // Формат для вопросов: originalname_uuid.ext
+    // Формат для ответов: originalname_uuid_answer.ext
     // UUID имеет формат xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    const uuidPattern = /_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[^.]+$/i
-    return fileName.replace(uuidPattern, '')
+    
+    // Сначала пробуем формат с _answer
+    const answerPattern = /_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_answer\.[^.]+$/i
+    if (answerPattern.test(fileName)) {
+      return fileName.replace(answerPattern, (match) => {
+        // Извлекаем расширение из match
+        const ext = match.substring(match.lastIndexOf('.'))
+        return ext
+      })
+    }
+    
+    // Если не _answer, то обычный формат
+    const questionPattern = /_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[^.]+$/i
+    return fileName.replace(questionPattern, (match) => {
+      const ext = match.substring(match.lastIndexOf('.'))
+      return ext
+    })
   }
 
   return (

@@ -79,7 +79,7 @@ export function QuestionDetails({ question, onRefresh }: QuestionDetailsProps) {
                   </time>
                 </div>
                 <p className="answer-message">{answer.message}</p>
-                <FileList files={answer.files} questionId={answer.question_id} isAnswer={true} />
+                {answer.files && <FileList files={answer.files} questionId={answer.question_id} isAnswer={true} />}
               </article>
             ))}
           </div>
@@ -100,7 +100,7 @@ export function QuestionDetails({ question, onRefresh }: QuestionDetailsProps) {
                   </time>
                 </div>
                 <p className="extra-message-text">{msg.message}</p>
-                <FileList files={msg.files} questionId={msg.question_id} isAnswer={false} />
+                {msg.files && <FileList files={msg.files} questionId={msg.question_id} isAnswer={false} />}
               </article>
             ))}
           </div>
