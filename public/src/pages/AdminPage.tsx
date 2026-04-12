@@ -24,6 +24,8 @@ export function AdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
   // Мемоизируем отфильтрованные вопросы
   const filteredQuestions = useMemo(() => {
@@ -60,6 +62,32 @@ export function AdminPage() {
     
     return () => abortController.abort()
   }, [])
+
+  const handleSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      // Если поиск пустой, загружаем все вопросы
+      await loadQuestions()
+      return
+    }
+
+    try {
+      setIsSearching(true)
+      setError(null)
+      
+      const results = await apiService.filterQuestions(query)
+      
+      // Фильтруем только валидные вопросы (с полем id)
+      const validResults = results.filter(q => q.id)
+      
+      // Сортируем результаты
+      const sortedResults = sortQuestions(validResults)
+      setQuestions(sortedResults)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка поиска')
+    } finally {
+      setIsSearching(false)
+    }
+  }, [loadQuestions])
 
   useEffect(() => {
     loadQuestions()
@@ -168,6 +196,38 @@ export function AdminPage() {
 
       <div className="page-content">
         <div className="filter-section">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Поиск по обращениям..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch(searchQuery)
+                }
+              }}
+              className="search-input"
+            />
+            <button 
+              onClick={() => handleSearch(searchQuery)}
+              disabled={isSearching}
+              className="search-button"
+            >
+              {isSearching ? 'Поиск...' : 'Найти'}
+            </button>
+            {searchQuery && (
+              <button 
+                onClick={() => {
+                  setSearchQuery('')
+                  loadQuestions()
+                }}
+                className="clear-search-button"
+              >
+                Очистить
+              </button>
+            )}
+          </div>
           <StatusFilter 
             selectedStatus={selectedStatus} 
             onStatusChange={setSelectedStatus} 

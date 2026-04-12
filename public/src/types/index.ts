@@ -36,7 +36,7 @@ export interface ExtraMessage {
 export interface Question {
   id: string
   date: string       // формат: YYYY-MM-DD
-  time: string       // формат: HH:MM:SS
+  time?: string      // формат: HH:MM:SS (опционально, может отсутствовать в результатах поиска)
   name: string
   surname: string
   email: string

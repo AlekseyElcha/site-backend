@@ -25,6 +25,8 @@ export function UserPage() {
   const [showForm, setShowForm] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const [showAnswered, setShowAnswered] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
   // Фильтруем вопросы по настройкам
   const filteredQuestions = useMemo(() => {
@@ -67,6 +69,32 @@ export function UserPage() {
     
     return () => abortController.abort()
   }, [user])
+
+  const handleSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      // Если поиск пустой, загружаем все вопросы
+      await loadQuestions()
+      return
+    }
+
+    try {
+      setIsSearching(true)
+      setError(null)
+      
+      const results = await apiService.filterQuestions(query)
+      
+      // Фильтруем только валидные вопросы (с полем id) и для текущего пользователя
+      const validResults = results.filter(q => q.id && q.email === user?.sub)
+      
+      // Сортируем результаты
+      const sortedResults = sortQuestions(validResults)
+      setQuestions(sortedResults)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка поиска')
+    } finally {
+      setIsSearching(false)
+    }
+  }, [user, loadQuestions])
 
   useEffect(() => {
     loadQuestions()
@@ -189,6 +217,38 @@ export function UserPage() {
       {!showForm && (
         <div className="page-content">
           <div className="filter-section">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Поиск по обращениям..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch(searchQuery)
+                  }
+                }}
+                className="search-input"
+              />
+              <button 
+                onClick={() => handleSearch(searchQuery)}
+                disabled={isSearching}
+                className="search-button"
+              >
+                {isSearching ? 'Поиск...' : 'Найти'}
+              </button>
+              {searchQuery && (
+                <button 
+                  onClick={() => {
+                    setSearchQuery('')
+                    loadQuestions()
+                  }}
+                  className="clear-search-button"
+                >
+                  Очистить
+                </button>
+              )}
+            </div>
             <div className="user-filters">
               <label className="filter-toggle">
                 <input

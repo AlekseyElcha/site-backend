@@ -151,6 +151,14 @@ class APIService {
     return this.handleResponse<QuestionData>(response)
   }
 
+  async filterQuestions(searchQuery: string): Promise<Question[]> {
+    const response = await fetch(`${this.baseURL}/handle_questions/question_filter?req=${encodeURIComponent(searchQuery)}`, {
+      method: 'GET',
+      credentials: 'include'
+    })
+    return this.handleResponse<Question[]>(response)
+  }
+
   async downloadAllFilesForQuestion(questionId: string): Promise<string[]> {
     const response = await fetch(`${this.baseURL}/files/download_all_files_for_question/${questionId}`, {
       method: 'PUT',

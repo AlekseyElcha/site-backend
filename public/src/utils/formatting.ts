@@ -26,6 +26,11 @@ function convertToLocalTime(dateString: string, timeString: string): Date {
 
 // Форматирование даты в формат ДД.ММ.ГГГГ с учетом часового пояса
 export function formatDate(dateString: string, timeString?: string): string {
+  // Проверка на undefined/null
+  if (!dateString) {
+    return 'Дата не указана'
+  }
+  
   if (timeString) {
     // Если есть время, конвертируем в локальный часовой пояс
     const localDate = convertToLocalTime(dateString, timeString)
@@ -33,7 +38,9 @@ export function formatDate(dateString: string, timeString?: string): string {
     // Проверяем что дата валидна
     if (isNaN(localDate.getTime())) {
       // Если дата невалидна, форматируем без конвертации
-      const [year, month, day] = dateString.split('-')
+      const parts = dateString.split('-')
+      if (parts.length !== 3) return dateString
+      const [year, month, day] = parts
       return `${day}.${month}.${year}`
     }
     
@@ -43,19 +50,28 @@ export function formatDate(dateString: string, timeString?: string): string {
     return `${day}.${month}.${year}`
   } else {
     // Если времени нет, просто форматируем дату
-    const [year, month, day] = dateString.split('-')
+    const parts = dateString.split('-')
+    if (parts.length !== 3) return dateString
+    const [year, month, day] = parts
     return `${day}.${month}.${year}`
   }
 }
 
 // Форматирование времени в формат ЧЧ:ММ с учетом часового пояса
 export function formatTime(dateString: string, timeString: string): string {
+  // Проверка на undefined/null
+  if (!dateString || !timeString) {
+    return '00:00'
+  }
+  
   const localDate = convertToLocalTime(dateString, timeString)
   
   // Проверяем что дата валидна
   if (isNaN(localDate.getTime())) {
     // Если дата невалидна, форматируем без конвертации
-    const [hours, minutes] = timeString.split(':')
+    const parts = timeString.split(':')
+    if (parts.length < 2) return timeString
+    const [hours, minutes] = parts
     return `${hours}:${minutes}`
   }
   
@@ -90,7 +106,7 @@ export function getStatusColor(status: QuestionStatus): string {
 }
 
 // Сортировка вопросов: active (новые→старые) → answered (новые→старые) → closed (новые→старые)
-export function sortQuestions<T extends { status: QuestionStatus; date: string; time: string }>(questions: T[]): T[] {
+export function sortQuestions<T extends { status: QuestionStatus; date: string; time?: string }>(questions: T[]): T[] {
   const statusOrder: Record<QuestionStatus, number> = {
     active: 1,
     answered: 2,
@@ -103,8 +119,10 @@ export function sortQuestions<T extends { status: QuestionStatus; date: string; 
     if (statusDiff !== 0) return statusDiff
 
     // Внутри статуса — по дате/времени (новые сверху)
-    const dateA = new Date(`${a.date}T${a.time.split('.')[0]}Z`)
-    const dateB = new Date(`${b.date}T${b.time.split('.')[0]}Z`)
+    const timeA = a.time ? a.time.split('.')[0] : '00:00:00'
+    const timeB = b.time ? b.time.split('.')[0] : '00:00:00'
+    const dateA = new Date(`${a.date}T${timeA}Z`)
+    const dateB = new Date(`${b.date}T${timeB}Z`)
     return dateB.getTime() - dateA.getTime()
   })
 }

@@ -35,9 +35,19 @@ export const QuestionCard = memo(function QuestionCard({ question, onClick, isSe
       
       <div className="question-card-info">
         <p className="question-card-email">{question.email}</p>
-        <time className="question-card-date" dateTime={`${question.date}T${question.time}`}>
-          {formatDate(question.date, question.time)} {formatTime(question.date, question.time)}
-        </time>
+        {question.date ? (
+          question.time ? (
+            <time className="question-card-date" dateTime={`${question.date}T${question.time}`}>
+              {formatDate(question.date, question.time)} {formatTime(question.date, question.time)}
+            </time>
+          ) : (
+            <time className="question-card-date" dateTime={question.date}>
+              {formatDate(question.date)}
+            </time>
+          )
+        ) : (
+          <span className="question-card-date">Дата не указана</span>
+        )}
       </div>
       
       <p className="question-card-message">
