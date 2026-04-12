@@ -285,9 +285,13 @@ async def get_all_data_for_question(
 
 @router.get("/question_filter")
 async def filter_questions(
+    user_data: Annotated[dict, Depends(get_current_user)],
     req: str = Query(None, min_length=1, max_length=100),
     session: AsyncSession = Depends(get_session),
 ):
+    user_role = user_data.get("role")
+    user_email = user_data.get("sub")
+    print(user_data)
     cache_key = f"question_filter:{req}"
     try:
         cached_data = await redis_client.get(cache_key)
@@ -298,7 +302,10 @@ async def filter_questions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка при получении закешированных данных."
         )
-    query = select(Questions)
+    if user_role == "admin":
+        query = select(Questions)
+    else:
+        query = select(Questions).where(Questions.email == user_email)
     try:
         query = query.where(
             Questions.name.ilike(f"%{req}%") |
@@ -307,7 +314,7 @@ async def filter_questions(
         )
         data = await session.execute(query)
         results = data.scalars().all()
-        serializable_results = []
+        serializable_results = [{"requester": str(user_email)}]
         for item in results:
             serializable_results.append(
                 {
@@ -336,4 +343,4 @@ async def filter_questions(
             detail="Ошибка сервера."
         )
 
-    return serializable_results
+    return serializable_results[1:]
