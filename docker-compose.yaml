@@ -19,3 +19,4 @@ services:
       - "5540:5540"
 volumes:
   postgres_data:
+
