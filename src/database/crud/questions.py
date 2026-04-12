@@ -10,7 +10,6 @@ from exceptions import CreateNewQuestionError, GetAllQuestionsListError, CreateN
     GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError, \
     BasicOperationDatabaseError, CreateNewExtraMessageError
 from src.database.services.auxiliary import get_user_email_by_question_id
-from src.services.email_service import send_answer_email_autocreated_by_question_id
 from src.models.models import Questions, Answers, ExtraMessages
 from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema, NewExtraMessageSchema
 

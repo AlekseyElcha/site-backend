@@ -1,8 +1,9 @@
+import uuid
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from exceptions import GetUserEmailByQuestionError
+from exceptions import GetUserEmailByQuestionError, BasicOperationDatabaseError
 from src.models.models import Questions
 
 async def get_user_email_by_question_id(
@@ -29,4 +30,3 @@ async def get_question_data_by_question_id(
     except:
         raise BasicOperationDatabaseError
     return question_data
-
