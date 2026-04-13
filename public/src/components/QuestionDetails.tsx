@@ -50,7 +50,7 @@ export function QuestionDetails({ question, onRefresh }: QuestionDetailsProps) {
       </div>
 
       <section className="question-details-message">
-        <h3 className="message-title">Ваше сообщение:</h3>
+        <h3 className="message-title">Сообщение:</h3>
         <p className="message-text">{question.message}</p>
         <FileList files={question.files} questionId={question.id} isAnswer={false} />
       </section>

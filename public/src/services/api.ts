@@ -10,10 +10,24 @@ class APIService {
   // Обработка ответа от API
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Ошибка сервера' }))
-      throw new Error(error.detail || `HTTP ${response.status}`)
+      let errorDetail = 'Ошибка сервера'
+      try {
+        const error = await response.json()
+        errorDetail = error.detail || `HTTP ${response.status}`
+      } catch {
+        errorDetail = `HTTP ${response.status}`
+      }
+      console.error('API Error:', response.status, errorDetail)
+      throw new Error(errorDetail)
     }
-    return response.json()
+    
+    try {
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('JSON Parse Error:', error)
+      throw new Error('Ошибка парсинга ответа сервера')
+    }
   }
 
   // Auth endpoints

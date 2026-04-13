@@ -90,7 +90,7 @@ export function QuestionForm({ onSubmit, isLoading, userEmail }: QuestionFormPro
 
   return (
     <form className="question-form" onSubmit={handleSubmit}>
-      <h3>Новое обращение</h3>
+      <h3>Создать обращение</h3>
       
       <div className="form-group">
         <input

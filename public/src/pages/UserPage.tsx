@@ -196,7 +196,7 @@ export function UserPage() {
         <h1>Мои обращения</h1>
         <div className="header-actions">
           <button onClick={handleToggleForm} className="new-button">
-            {showForm ? 'Отменить' : 'Новое обращение'}
+            {showForm ? 'Отменить' : 'Создать обращение'}
           </button>
           <button onClick={logout} className="logout-button">Выйти</button>
         </div>

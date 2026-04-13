@@ -25,7 +25,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true)
-      const userInfo = await apiService.getUserInfo()
+      
+      // Пробуем получить информацию о пользователе с retry
+      let userInfo: UserInfo | null = null
+      let lastError: Error | null = null
+      
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          userInfo = await apiService.getUserInfo()
+          break // Успешно получили данные
+        } catch (error) {
+          lastError = error as Error
+          console.error(`Попытка ${attempt + 1}/3 получить user_info не удалась:`, error)
+          
+          // Если это 401/403 - не пытаемся повторно
+          if (error instanceof Error && error.message.includes('401')) {
+            break
+          }
+          
+          // Ждем перед следующей попыткой
+          if (attempt < 2) {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+          }
+        }
+      }
+      
+      if (!userInfo) {
+        throw lastError || new Error('Не удалось получить информацию о пользователе')
+      }
+      
       setUser(userInfo)
       
       // Перенаправление по роли только если не на странице входа
@@ -38,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
+      console.error('Ошибка аутентификации:', error)
       setUser(null)
       // Не перенаправляем, если уже на странице входа
       const currentPath = window.location.pathname
@@ -52,9 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Вход в систему
   const login = useCallback(async (email: string, code: string) => {
     try {
+      console.log('Начинаем вход...')
       await apiService.login(email, code)
+      console.log('Логин успешен, проверяем аутентификацию...')
       await checkAuth()
+      console.log('Аутентификация проверена')
     } catch (error) {
+      console.error('Ошибка входа:', error)
       throw error
     }
   }, [checkAuth])
