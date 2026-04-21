@@ -49,5 +49,6 @@ app.include_router(router=auth_router)
 app.include_router(router=files_router)
 
 
-# TODO добавить удаление email-кода из БД после изменения статуса на was_used=True - опционально (нагрузка низкая)
-# TODO разобраться с фильтрацией (поиском) обращений по id, name, surname, email и address - !!!
+# TODO добавить обработку ошибки на handle_questions/change_question_status
+# TODO проверить отправку файлов (кодировку) с разных ОС
+
