@@ -47,14 +47,6 @@ async def create_question(
             filenames.append(new_filename)
             file.filename = new_filename
         question_data.files = filenames
-    try:
-        await create_new_question(question_data, unique_id, session)
-    except CreateNewQuestionError:
-        logger.warning("ОШИБКА ПРИ СОЗДАНИИ ВОПРОСА!")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Произошла ошибка при создании вопроса.",
-        )
     if files:
         try:
             await upload_multiple_files(
@@ -67,6 +59,17 @@ async def create_question(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Ошибка при загрузке!"
             )
+        # return {
+        #     "message": "Ошибка при загрузке файлов на сервер."
+        # }
+    try:
+        await create_new_question(question_data, unique_id, session)
+    except CreateNewQuestionError:
+        logger.warning("ОШИБКА ПРИ СОЗДАНИИ ВОПРОСА!")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Произошла ошибка при создании вопроса.",
+        )
     try:
         # TODO поменять ссылки здесь!!!
         await send_notification_with_text(
