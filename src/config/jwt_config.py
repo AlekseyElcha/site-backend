@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from src.config.app import BASE_DIR
+from src.config.app_config import BASE_DIR
 
 
 class AuthJWT(BaseModel):
