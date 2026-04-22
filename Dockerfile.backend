@@ -1,0 +1,42 @@
+FROM ubuntu:24.04
+
+# Устанавливаем Python 3.14 и зависимости
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y \
+    python3.14 \
+    python3.14-venv \
+    python3.14-dev \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем pip для Python 3.14
+RUN python3.14 -m ensurepip && \
+    python3.14 -m pip install --upgrade pip
+
+# Создаём симлинк для python3 (на Python 3.14)
+RUN ln -sf /usr/bin/python3.14 /usr/bin/python3 && \
+    ln -sf /usr/bin/python3.14 /usr/bin/python
+
+WORKDIR /app
+
+# Копируем файлы зависимостей
+COPY pyproject.toml uv.lock ./
+
+# Устанавливаем uv и зависимости
+RUN pip3 install uv && \
+    uv pip install --system -r pyproject.toml
+
+# Копируем исходный код
+COPY src/ ./src/
+COPY exceptions.py ./
+COPY alembic.ini ./
+COPY migrations/ ./migrations/
+
+EXPOSE 8000
+
+#убрать --reload !!!
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "--reload" "8000"]
