@@ -2,19 +2,15 @@ import asyncio
 import json
 import logging
 import uuid
-from email.policy import HTTP
 from typing import Annotated, Optional, List
 from uuid import UUID
 
-import redis
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, Request
 from fastapi.params import Body, Form, File, Query
-from pyexpat.errors import messages
-from sqlalchemy import True_, select, cast, String
+from sqlalchemy import select, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from exceptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
-    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError, \
-    CreateNewExtraMessageError
+    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError
 from src.config.settings import settings
 from src.database.crud.questions import (
     get_all_questions_from_db,
@@ -26,7 +22,7 @@ from src.database.crud.questions import (
 
 from src.database.db import get_session
 from src.database.services.auxiliary import get_user_email_by_question_id
-from src.models.models import Answers, Questions
+from src.models.models import Questions, Answers
 from src.redis.get_redis import get_redis
 from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import NewAnswerSchema, NewExtraMessageSchema
@@ -218,13 +214,13 @@ async def add_extra_message_to_question(
         try:
             await upload_multiple_files(
                 files=files,
-                question_uuid=unique_id,
+                question_uuid=str(unique_id),
             )
         except Exception as e:
-            logger.warning("ERROR WHILE UPLOADING FILES {}".format(e))
+            logger.error(f"ERROR WHILE UPLOADING FILES: {str(e)}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Ошибка при загрузке!"
+                detail=f"Ошибка при загрузке файлов: {str(e)}"
             )
     try:
         await send_notification_with_text(
@@ -292,6 +288,7 @@ async def filter_questions(
     user_role = user_data.get("role")
     user_email = user_data.get("sub")
     print(user_data)
+
     cache_key = f"question_filter:{req}"
     try:
         cached_data = await redis_client.get(cache_key)
@@ -302,45 +299,72 @@ async def filter_questions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка при получении закешированных данных."
         )
+
     if user_role == "admin":
-        query = select(Questions)
-    else:
-        query = select(Questions).where(Questions.email == user_email)
-    try:
-        query = query.where(
-            Questions.name.ilike(f"%{req}%") |
-            Questions.surname.ilike(f"%{req}%") | Questions.email.ilike(f"%{req}%") |
-            Questions.address.ilike(f"%{req}%") | Questions.message.ilike(f"%{req}%")
+        query = select(Questions, Answers).outerjoin(
+            Answers, Answers.question_id == Questions.id
         )
+    else:
+        query = select(Questions, Answers).outerjoin(
+            Answers, Answers.question_id == Questions.id
+        ).where(
+            Questions.email == user_email
+        )
+
+    try:
+        if req:
+            query = query.where(
+                Questions.name.ilike(f"%{req}%")
+                | Questions.surname.ilike(f"%{req}%")
+                | Questions.email.ilike(f"%{req}%")
+                | Questions.address.ilike(f"%{req}%")
+                | Questions.message.ilike(f"%{req}%")
+                | cast(Answers.question_id, String).ilike(f"%{req}%")
+            )
+
         data = await session.execute(query)
-        results = data.scalars().all()
+        results = data.all()
+
+        print(f"Found {len(results)} results")  # Отладка
+
         serializable_results = [{"requester": str(user_email)}]
-        for item in results:
+
+        for question, answer in results:
             serializable_results.append(
                 {
-                    "id": str(item.id),
-                    "name": item.name,
-                    "surname": item.surname,
-                    "email": item.email,
-                    "address": item.address,
-                    "message": item.message,
+                    "id": str(question.id),
+                    "name": question.name,
+                    "surname": question.surname,
+                    "email": question.email,
+                    "address": question.address,
+                    "message": question.message,
                     "date": (
-                        item.date.isoformat()
-                        if hasattr(item, "date") and item.date
+                        question.date.isoformat()
+                        if hasattr(question, "date") and question.date
                         else None
                     ),
                     "time": (
-                        str(item.time) if hasattr(item, "time") and item.time else None
+                        str(question.time) if hasattr(question, "time") and question.time else None
                     ),
-                    "status": item.status if hasattr(item, "status") else None,
+                    "answer_id": str(answer.id) if answer else None,
+                    "status": question.status if hasattr(question, "status") else None,
                 }
             )
-        if serializable_results:
-            await redis_client.setex(cache_key, settings.redis.expiration_seconds, json.dumps(serializable_results, ensure_ascii=False))
-    except:
+
+        if serializable_results and len(serializable_results) > 1:
+            await redis_client.setex(
+                cache_key,
+                settings.redis.expiration_seconds,
+                json.dumps(serializable_results, ensure_ascii=False)
+            )
+
+        return serializable_results[1:] if len(serializable_results) > 1 else []
+
+    except Exception as e:
+        print(f"ERROR: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка сервера."
+            detail=f"Ошибка сервера: {str(e)}"
         )
-
-    return serializable_results[1:]
