@@ -44,7 +44,7 @@ export function QuestionDetails({ question, onRefresh }: QuestionDetailsProps) {
         <div className="info-row">
           <span className="info-label">Дата:</span>
           <span className="info-value">
-            {formatDate(question.date, question.time)} {formatTime(question.date, question.time)}
+            {question.time ? `${formatDate(question.date, question.time)} ${formatTime(question.date, question.time)}` : formatDate(question.date, '')}
           </span>
         </div>
       </div>
@@ -79,7 +79,9 @@ export function QuestionDetails({ question, onRefresh }: QuestionDetailsProps) {
                   </time>
                 </div>
                 <p className="answer-message">{answer.message}</p>
-                {answer.files && <FileList files={answer.files} questionId={answer.question_id} isAnswer={true} />}
+                {answer.files && answer.files.length > 0 && (
+                  <FileList files={answer.files} questionId={answer.question_id} isAnswer={true} />
+                )}
               </article>
             ))}
           </div>
@@ -100,7 +102,9 @@ export function QuestionDetails({ question, onRefresh }: QuestionDetailsProps) {
                   </time>
                 </div>
                 <p className="extra-message-text">{msg.message}</p>
-                {msg.files && <FileList files={msg.files} questionId={msg.question_id} isAnswer={false} />}
+                {msg.files && msg.files.length > 0 && (
+                  <FileList files={msg.files} questionId={msg.question_id} isAnswer={false} />
+                )}
               </article>
             ))}
           </div>

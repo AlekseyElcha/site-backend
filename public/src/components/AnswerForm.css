@@ -78,6 +78,37 @@
   border-radius: 0.375rem;
   font-size: 0.875rem;
   cursor: pointer;
+  color: transparent; /* Скрываем текст "Файл не выбран" */
+}
+
+.answer-form .file-input::file-selector-button {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.answer-form .file-input::file-selector-button:hover {
+  background: var(--primary-hover);
+}
+
+.answer-form .file-input::-webkit-file-upload-button {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.answer-form .file-input::-webkit-file-upload-button:hover {
+  background: var(--primary-hover);
 }
 
 .answer-form .file-list {
