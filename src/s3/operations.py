@@ -15,6 +15,8 @@ from src.models.models import Questions, Answers
 s3 = boto3.client(
    service_name='s3',
    endpoint_url=settings.s3.endpoint,
+   aws_access_key_id=settings.s3.key,
+   aws_secret_access_key=settings.s3.secret,
    verify=False,
    use_ssl=True,
 )
@@ -63,12 +65,12 @@ async def upload_multiple_files(
     successful = [r for r in results if r["success"]]
     failed = [r for r in results if not r["success"]]
 
-    return {
-        "message": f"Загружено {len(successful)} из {len(files)} файлов",
-        "uploaded": successful,
-        "failed": failed if failed else None,
-        "file_names": filenames,
-    }
+    # return {
+    #     "message": f"Загружено {len(successful)} из {len(files)} файлов",
+    #     "uploaded": successful,
+    #     "failed": failed if failed else None,
+    #     "file_names": filenames,
+    # }
 
 
 def list_all_files_in_s3():
