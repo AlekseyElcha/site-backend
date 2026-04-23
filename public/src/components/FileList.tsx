@@ -45,7 +45,9 @@ export function FileList({ files, questionId, isAnswer = false }: FileListProps)
 
   const handleDownloadFile = async (fileName: string) => {
     try {
+      console.log('Downloading file:', fileName)
       const url = await apiService.downloadFileByName(fileName)
+      console.log('Got URL:', url)
       // Открываем URL в новой вкладке - браузер сам скачает файл
       window.open(url, '_blank')
     } catch (error) {
