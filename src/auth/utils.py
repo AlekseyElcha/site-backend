@@ -25,13 +25,13 @@ async def validate_auth_user(
     try:
         res = await session.execute(query)
         data = res.scalars().first()
+        if data.was_used:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Код уже был использован. Запросите новый код."
+            )
     except:
         raise BasicOperationDatabaseError
-    if data.was_used:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Код уже был использован. Запросите новый код."
-        )
     now = datetime.utcnow()
     exp = data.expiration
     has_exp = has_expired(now, exp)
