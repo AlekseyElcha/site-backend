@@ -26,6 +26,12 @@ class Business(BaseModel):
         "{message_data}"
     )
 
+    auth_code_generated_message: str = (
+        "Ваш код для входа на сайт: {auth_code}\n"
+        "Код действителен в течение {exp_time} минут.\n\n"
+        "Данное письмо было отправлено автоматически."
+    )
+
     def format_message_text(self, name: str, surname: str, unique_id: str) -> str:
         return self.question_created_message_template.format(
             name=name,
@@ -43,4 +49,10 @@ class Business(BaseModel):
         return self.extra_message_created_notification_to_admins.format(
             unique_id=unique_id,
             message_data=message_data
+        )
+
+    def format_auth_code_message(self, auth_code: str, exp_time: int) -> str:
+        return self.auth_code_generated_message.format(
+            auth_code=auth_code,
+            exp_time=exp_time
         )
