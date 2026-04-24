@@ -191,35 +191,20 @@ class APIService {
 
   
 async downloadFileByName(fileName: string): Promise<string> {
-  // Используем query параметр для передачи имени файла
-  const params = new URLSearchParams()
-  params.append('file_name', fileName)
-  
-  const url = `/files/download_file_by_name?${params.toString()}`
-  
-  console.log('Fetching download URL from:', url)
-  
-  try {
-    const response = await fetch(url, {
-      method: 'PUT',
-      credentials: 'include'
-    })
-    
-    console.log('Response status:', response.status)
-    
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Error response:', errorText)
-      throw new Error(`HTTP ${response.status}`)
-    }
+  const response = await fetch(`${this.baseURL}/files/download_file_by_name`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ file_name: fileName })
+  })
 
-    const data = await response.json()
-    console.log('Response data:', data)
-    return data.url
-  } catch (error) {
-    console.error('Download error:', error)
-    throw error
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('Error response:', errorText)
+    throw new Error(`HTTP ${response.status}`)
   }
+
+  return response.json()
 }
 }
 
