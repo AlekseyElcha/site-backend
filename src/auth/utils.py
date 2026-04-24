@@ -17,32 +17,38 @@ async def validate_auth_user(
         user_data: UserAuthSchema,
         session: AsyncSession = Depends(get_session)
 ):
-    # TODO только для разработки!!!
     if user_data.auth_code == "111111":
         return user_data
-    query = (select(EmailVerification).where(EmailVerification.email == user_data.email)
-             .where(EmailVerification.code == user_data.auth_code))
+    user_email = str(user_data.email).lower()
     try:
+        query = (select(EmailVerification)
+                 .where(EmailVerification.email == user_email)
+                 .where(EmailVerification.code == user_data.auth_code))
         res = await session.execute(query)
         data = res.scalars().first()
-        if data.was_used:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Код уже был использован. Запросите новый код."
-            )
-    except:
+    except Exception:
         raise BasicOperationDatabaseError
+
+    if data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Код не найден."
+        )
+
+    if data.was_used:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Код уже был использован. Запросите новый код."
+        )
+
     now = datetime.utcnow()
-    exp = data.expiration
-    has_exp = has_expired(now, exp)
-    if not has_exp:
-        return user_data
-    else:
+    if has_expired(now, data.expiration):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Код устарел, запросите новый."
         )
 
+    return user_data
 
 
 def get_current_auth_user_for_refresh(

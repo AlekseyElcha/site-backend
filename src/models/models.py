@@ -1,6 +1,6 @@
 import uuid
 from datetime import date, time
-from sqlalchemy import text, Date, Time, ForeignKey, DateTime, ARRAY, String
+from sqlalchemy import text, Date, Time, ForeignKey, DateTime, ARRAY, String, Boolean
 from sqlalchemy.dialects.postgresql import UUID as SQLAUUID
 from sqlalchemy.orm import mapped_column, Mapped, DeclarativeBase, relationship
 from typing import List
@@ -97,4 +97,4 @@ class EmailVerification(Base):
     code: Mapped[str] = mapped_column(nullable=False)
     creation: Mapped[date] = mapped_column(DateTime, nullable=False)
     expiration: Mapped[time] = mapped_column(DateTime, nullable=False)
-    was_used: Mapped[bool] = mapped_column(nullable=False, default=False)
+    was_used: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
