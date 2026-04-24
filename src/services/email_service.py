@@ -72,11 +72,12 @@ async def send_auth_code(user_email: str, auth_code: str):
     msg = MIMEMultipart()
     msg['From'] = fromaddr
     msg['To'] = toaddr
-    msg['Subject'] = "Код для входа // тест"
+    msg['Subject'] = "Код для входа на сайт"
 
-    body = (f"Ваш код для входа на сайт: {auth_code}\n"
-            f"Код действителен в течение {settings.business.email_code_verification_timeout_minutes} минут.\n\n"
-            f"Данное письмо было отправлено автоматически.")
+    body = settings.business.format_auth_code_message(
+        auth_code,
+        settings.business.email_code_verification_timeout_minutes
+    )
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
     try:
