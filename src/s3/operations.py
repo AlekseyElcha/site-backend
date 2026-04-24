@@ -2,6 +2,7 @@ import asyncio
 from typing import List, Annotated
 
 import boto3
+from botocore.config import Config
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
 from fastapi.params import Depends, Body
 from sqlalchemy import select, func
@@ -13,12 +14,13 @@ from src.database.db import get_session
 from src.models.models import Questions, Answers
 
 s3 = boto3.client(
-   service_name='s3',
-   endpoint_url=settings.s3.endpoint,
-   aws_access_key_id=settings.s3.key,
-   aws_secret_access_key=settings.s3.secret,
-   verify=False,
-   use_ssl=True,
+    service_name='s3',
+    endpoint_url=settings.s3.endpoint,
+    aws_access_key_id=settings.s3.key,
+    aws_secret_access_key=settings.s3.secret,
+    verify=False,
+    use_ssl=True,
+    config=Config(signature_version="s3v4")
 )
 bucket_name = settings.s3.container
 
@@ -184,7 +186,7 @@ async def download_multiple_files(
 
 
 @router.put("/download_file_by_name")
-async def download_file_by_name(file_name: str = Body(embed=True)):
+def download_file_by_name(file_name: str = Body(embed=True)):
     try:
         url = s3.generate_presigned_url(
             ClientMethod="get_object",
@@ -197,3 +199,6 @@ async def download_file_by_name(file_name: str = Body(embed=True)):
             detail="Файл не найден."
         )
     return url
+
+a = download_file_by_name("шаблон3.jpg_25523dc3-07ce-44bd-a908-1bd7120fd53f.jpg")
+print(a)
