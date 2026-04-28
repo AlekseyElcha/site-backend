@@ -8,7 +8,7 @@ from datetime import time, timezone
 
 from exceptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNewAnswerError, \
     GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError, \
-    BasicOperationDatabaseError, CreateNewExtraMessageError
+    BasicOperationDatabaseError, CreateNewExtraMessageError, ChangeQuestionStatusError
 from src.database.services.auxiliary import get_user_email_by_question_id
 from src.models.models import Questions, Answers, ExtraMessages
 from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema, NewExtraMessageSchema
@@ -80,17 +80,20 @@ async def change_question_status(
         user_role: str,
         session: AsyncSession,
 ):
-    if user_role == "user":
-        query = update(Questions).where(Questions.id == question_id) \
-        .values(status=new_status, comment="закрыто пользователем")
-    else:
-        query = update(Questions).where(Questions.id == question_id).values(status=new_status)
     try:
-        await session.execute(query)
+        if user_role == "user":
+            query = update(Questions).where(Questions.id == question_id) \
+            .values(status=new_status, comment="закрыто пользователем")
+        else:
+            query = update(Questions).where(Questions.id == question_id).values(status=new_status)
+        try:
+            await session.execute(query)
+        except:
+            raise UpdateQuestionStatusError
+        await session.commit()
+        return True
     except:
         raise UpdateQuestionStatusError
-    await session.commit()
-    return True
 
 
 async def get_answers_for_questions(session: AsyncSession):

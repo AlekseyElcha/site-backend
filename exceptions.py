@@ -68,3 +68,7 @@ class NotAdmin(QuestionsBaseException):
 
 class CreateNewExtraMessageError(QuestionsBaseException):
     pass
+
+
+class ChangeQuestionStatusError(QuestionsBaseException):
+    pass
