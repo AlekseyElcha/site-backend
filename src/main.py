@@ -49,6 +49,5 @@ app.include_router(router=auth_router)
 app.include_router(router=files_router)
 
 
-# TODO добавить обработку ошибки на handle_questions/change_question_status
-# TODO проверить отправку файлов (кодировку) с разных ОС
+# TODO Убрать asyncio.sleep() в эндпоинте @router.post("/create_extra_message") - !!!
 
