@@ -203,14 +203,9 @@ async def add_extra_message_to_question(
             filenames.append(new_filename)
             file.filename = new_filename
         message_data.files = filenames
-    # try:
+
     await create_extra_message_for_question(message_data, session)
-    # except CreateNewExtraMessageError:
-    #     logger.warning("ERROR WHILE CREATING NEW QUESTION")
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail="Произошла ошибка при создании вопроса.",
-    #     )
+
     if files:
         try:
             await upload_multiple_files(
@@ -232,27 +227,7 @@ async def add_extra_message_to_question(
             )
         )
     except:
-        success = False
-        logger.warning("ERROR WHILE SENDING QUESTION CREATED TO ADMIN. RETRYING AFTER 5 SEC.")
-        await asyncio.sleep(5)
-        retries_count = settings.email.retries_for_sending_messages
-        for retry in range(retries_count):
-            try:
-                await send_notification_with_text(
-                    email=settings.email.from_address.lower(),
-                    subject="Уведомление о новом сообщении",
-                    message=settings.business.format_extra_message_text(
-                        unique_id, message_data
-                    )
-                )
-                success = True
-            except SendEmailError:
-                logger.warning(
-                    "RETRY {} UNSUCCESSFUL. RETRYING AFTER 5 SECONDS".format(retry + 1)
-                )
-            if not success:
-                logger.warning("{} RETRIES UNSUCCESSFUL.".format(retries_count))
-
+        logger.warning("Ошибка при отправке уведомления о создании нового доп. сообщения!")
     return {
         "message": "Сообщение успешно создано."
     }
