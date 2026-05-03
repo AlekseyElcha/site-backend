@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from pydantic_settings import  BaseSettings, SettingsConfigDict
 
 from src.config.app_config import AppConfig

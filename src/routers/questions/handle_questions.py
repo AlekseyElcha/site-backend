@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import uuid
@@ -7,10 +6,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, Request
 from fastapi.params import Body, Form, File, Query
-from sqlalchemy import select, or_, cast, String
+from sqlalchemy import select, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
-from exceptions import GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender, \
-    SendEmailError, UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError
+from exceptions import (GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender,
+                        UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError)
 from src.config.settings import settings
 from src.database.crud.questions import (
     get_all_questions_from_db,
@@ -81,6 +80,7 @@ async def get_all_answers_for_all_questions(
             detail="Ошибка при работе с базой данных"
         )
     return data
+
 
 @router.put("/change_question_status")
 async def change_question_status_manually(
@@ -301,8 +301,6 @@ async def filter_questions(
         data = await session.execute(query)
         results = data.all()
 
-        print(f"Found {len(results)} results")  # Отладка
-
         serializable_results = [{"requester": str(user_email)}]
 
         for question, answer in results:
@@ -337,7 +335,7 @@ async def filter_questions(
         return serializable_results[1:] if len(serializable_results) > 1 else []
 
     except Exception as e:
-        print(f"ERROR: {e}")
+        logger.warning(e)
         import traceback
         traceback.print_exc()
         raise HTTPException(

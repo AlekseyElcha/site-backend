@@ -1,15 +1,12 @@
 import uuid
 from uuid import UUID
 
-import pytz
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import time, timezone
 
-from exceptions import CreateNewQuestionError, GetAllQuestionsListError, CreateNewAnswerError, \
-    GetUserEmailByQuestionError, GetUserEmailByQuestionErrorInEmailSender, SendEmailError, UpdateQuestionStatusError, \
-    BasicOperationDatabaseError, CreateNewExtraMessageError, ChangeQuestionStatusError
-from src.database.services.auxiliary import get_user_email_by_question_id
+from exceptions import (CreateNewQuestionError, GetAllQuestionsListError,
+                        CreateNewAnswerError, UpdateQuestionStatusError,
+    BasicOperationDatabaseError, CreateNewExtraMessageError)
 from src.models.models import Questions, Answers, ExtraMessages
 from src.schemas.schemas import NewQuestionSchema, NewAnswerSchema, NewExtraMessageSchema
 
@@ -62,15 +59,6 @@ async def create_new_answer(
     except:
         raise CreateNewAnswerError
     await session.close()
-    # try:
-    #     await send_answer_email(
-    #         user_email=await get_user_email_by_question_id(session, answer.question_id),
-    #         message=answer.message,
-    #     )
-    # except GetUserEmailByQuestionError:
-    #     raise GetUserEmailByQuestionErrorInEmailSender
-    # except SendEmailError:
-    #     raise SendEmailError
     return True
 
 
