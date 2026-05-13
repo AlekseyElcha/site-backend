@@ -1,17 +1,33 @@
 import smtplib
-import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from uuid import UUID
 
 from dotenv import load_dotenv
 from src.config.settings import settings
 from exceptions import SendEmailError
 from src.decorators.retrying import retry
 
+
 load_dotenv()
 
-@retry(max_attempts=3, delay=1.0, backoff=2.0)
+SEND_ANSWER_EMAIL_MOD_MAX_ATTEMPTS = settings.email.send_answer_email_mod_retries
+SEND_ANSWER_EMAIL_DELAY = settings.email.send_answer_email_mod_delay
+SEND_ANSWER_EMAIL_BACKOFF = settings.email.send_answer_email_mod_backoff
+
+SEND_AUTH_CODE_MAX_ATTEMPTS = settings.email.send_auth_code_retries
+SEND_AUTH_CODE_DELAY = settings.email.send_auth_code_delay
+SEND_AUTH_CODE_BACKOFF = settings.email.send_auth_code_backoff
+
+SEND_NOTIFICATION_WITH_TEXT_MAX_ATTEMPTS = settings.email.send_notification_with_text_retries
+SEND_NOTIFICATION_WITH_TEXT_DELAY = settings.email.send_notification_with_text_delay
+SEND_NOTIFICATION_WITH_TEXT_BACKOFF = settings.email.send_notification_with_text_backoff
+
+
+@retry(
+    max_attempts=SEND_ANSWER_EMAIL_MOD_MAX_ATTEMPTS,
+    delay=SEND_ANSWER_EMAIL_DELAY,
+    backoff=SEND_ANSWER_EMAIL_BACKOFF,
+)
 async def send_answer_email_mod(user_email: str, message: str):
     fromaddr = settings.email.from_address
     toaddr = f"{user_email.lower()}"
@@ -20,7 +36,7 @@ async def send_answer_email_mod(user_email: str, message: str):
     msg = MIMEMultipart()
     msg['From'] = fromaddr
     msg['To'] = toaddr
-    msg['Subject'] = f"ООО «Домофон-сервис». Ответ на Ваш вопрос."
+    msg['Subject'] = settings.business.send_answer_email_mod_subject
     body = (f"{message}")
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
@@ -63,7 +79,11 @@ async def send_answer_email_mod(user_email: str, message: str):
 #         raise SendEmailError
 
 
-@retry(max_attempts=3, delay=1.0, backoff=2.0)
+@retry(
+    max_attempts=SEND_AUTH_CODE_MAX_ATTEMPTS,
+    delay=SEND_AUTH_CODE_DELAY,
+    backoff=SEND_AUTH_CODE_BACKOFF,
+)
 async def send_auth_code(user_email: str, auth_code: str):
     fromaddr = settings.email.from_address
     toaddr = f"{user_email}"
@@ -72,7 +92,7 @@ async def send_auth_code(user_email: str, auth_code: str):
     msg = MIMEMultipart()
     msg['From'] = fromaddr
     msg['To'] = toaddr
-    msg['Subject'] = "Код для входа на сайт"
+    msg['Subject'] = settings.business.send_auth_code_subject
 
     body = settings.business.format_auth_code_message(
         auth_code,
@@ -93,7 +113,11 @@ async def send_auth_code(user_email: str, auth_code: str):
         raise SendEmailError
 
 
-@retry(max_attempts=3, delay=1.0, backoff=2.0)
+@retry(
+    max_attempts=SEND_NOTIFICATION_WITH_TEXT_MAX_ATTEMPTS,
+    delay=SEND_NOTIFICATION_WITH_TEXT_DELAY,
+    backoff=SEND_NOTIFICATION_WITH_TEXT_BACKOFF,
+)
 async def send_notification_with_text(email: str, subject: str , message: str):
     fromaddr = settings.email.from_address
     toaddr = email
