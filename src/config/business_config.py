@@ -3,6 +3,9 @@ from pydantic import BaseModel
 class Business(BaseModel):
     email_code_verification_timeout_minutes: int = 15
 
+    send_answer_email_mod_subject: str = f"ООО «Домофон-сервис». Ответ на Ваш вопрос."
+    send_auth_code_subject: str = f"Ваш код для входа на сайт."
+
     question_created_message_template: str = (
         "Уважаемый {name} {surname},\n"
         "Уведомляем Вас о том, что Вы успешно создали обращение в ООО «Домофон-сервис» "
