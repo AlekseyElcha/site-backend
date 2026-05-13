@@ -1,11 +1,11 @@
 :root {
   /* Цветовая схема */
-  --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
+  --primary-color: #1036df;
+  --primary-hover: #1f88ff;
   --danger-color: #dc2626;
   --success-color: #16a34a;
   --warning-color: #ea580c;
-  --text-primary: #1f2937;
+  --text-primary: #1c1414;
   --text-secondary: #6b7280;
   --bg-primary: #ffffff;
   --bg-secondary: #f3f4f6;
