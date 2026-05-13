@@ -70,71 +70,35 @@ async def create_question(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Произошла ошибка при создании вопроса.",
         )
-    # try:
-    #     # TODO поменять ссылки здесь!!!
-    #     await send_notification_with_text(
-    #         email=question_data.email.lower(),
-    #         subject="ООО «Домофон-сервис». Уведомление о создании обращения",
-    #         message=settings.business.format_message_text(
-    #             question_data.name, question_data.surname, unique_id
-    #         ),
-    #     )
-    # except SendEmailError:
-    #     # success = False
-    #     retries_count = settings.email.retries_for_sending_messages
-    #     for retry in range(retries_count):
-    #         logger.warning(
-    #             "Ошибка при отправке email на: {}."
-    #             " об успешном создании обращения."
-    #             .format(question_data.email)
-    #         )
-        #     await asyncio.sleep(5)
-        #     try:
-        #         await send_notification_with_text(
-        #             email=question_data.email.lower(),
-        #             subject="ООО «Домофон-сервис». Уведомление о создании обращения",
-        #             message=settings.business.format_message_text(
-        #                 question_data.name,
-        #                 question_data.surname,
-        #                 unique_id
-        #             ),
-        #         )
-        #         success = True
-        #     except SendEmailError:
-        #         logger.warning(
-        #             "RETRY {} UNSUCCESSFUL. RETRYING AFTER 5 SECONDS".format(retry+1)
-        #         )
-        # if not success:
-        #     logger.warning("{} RETRIES UNSUCCESSFUL.".format(retries_count))
-    # try:
-    #     await send_notification_with_text(
-    #         email=settings.email.from_address.lower(),
-    #         subject="Уведомление о новом обращении на платформе",
-    #         message=settings.business.format_message_text_for_admins(
-    #             unique_id, question_data
-    #         )
-    #     )
-    # except:
-    #     # success = False
-    #     logger.warning("Ошибка при отправке сообщения о новом обращении админам.")
-        # await asyncio.sleep(5)
-        # retries_count = settings.email.retries_for_sending_messages
-        # for retry in range(retries_count):
-        #     try:
-        #         await send_notification_with_text(
-        #             email=settings.email.from_address.lower(),
-        #             subject="Уведомление о новом обращении на платформе",
-        #             message=settings.business.format_message_text_for_admins(
-        #                 unique_id, question_data
-        #             )
-        #         )
-        #         success = True
-        #     except SendEmailError:
-        #         logger.warning(
-        #             "RETRY {} UNSUCCESSFUL. RETRYING AFTER 5 SECONDS".format(retry+1)
-        #         )
-        #     if not success:
-        #         logger.warning("{} RETRIES UNSUCCESSFUL.".format(retries_count))
+    try:
+        # TODO поменять ссылки здесь!!!
+        await send_notification_with_text(
+            email=question_data.email.lower(),
+            subject="ООО «Домофон-сервис». Уведомление о создании обращения",
+            message=settings.business.format_message_text(
+                question_data.name, question_data.surname, unique_id
+            ),
+        )
+    except SendEmailError:
+        # success = False
+        retries_count = settings.email.retries_for_sending_messages
+        for retry in range(retries_count):
+            logger.warning(
+                "Ошибка при отправке email на: {}."
+                " об успешном создании обращения."
+                .format(question_data.email)
+            )
+    try:
+        await send_notification_with_text(
+            email=settings.email.from_address.lower(),
+            subject="Уведомление о новом обращении на платформе",
+            message=settings.business.format_message_text_for_admins(
+                unique_id, question_data
+            )
+        )
+    except:
+        # success = False
+        logger.warning("Ошибка при отправке сообщения о новом обращении админам.")
 
     return {
         "message": "Вопрос успешно создан."
