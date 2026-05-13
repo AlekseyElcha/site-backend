@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     await redis_client.aclose()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, root_path="/dev")
 
 
 origins = [
@@ -46,7 +46,3 @@ app.include_router(router=questions_router)
 app.include_router(router=handle_questions_router)
 app.include_router(router=auth_router)
 app.include_router(router=files_router)
-
-
-# TODO Убрать asyncio.sleep() в эндпоинте @router.post("/create_extra_message") - !!!
-
