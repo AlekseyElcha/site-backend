@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     await redis_client.aclose()
 
 
-app = FastAPI(lifespan=lifespan, root_path="/dev")
+app = FastAPI(lifespan=lifespan)
 
 
 origins = [
