@@ -9,22 +9,21 @@ class Business(BaseModel):
     question_created_message_template: str = (
         "Уважаемый {name} {surname},\n"
         "Уведомляем Вас о том, что Вы успешно создали обращение в ООО «Домофон-сервис» "
-        "при помощи нашего онлайн-сервиса <ССЫЛКУ СЮДА> \n\n"
-        "Если Вы не оставляли обращение, напишите <СЮДА> - со всем разберёмся.\n"
+        "при помощи нашего онлайн-сервиса ask.domofon-servis-odi.ru \n\n"
         "Уникальный идентификатор вопроса: {unique_id}\n\n"
         "Данное письмо было отправлено автоматически, просьба не отвечать на него."
     )
 
     question_created_message_to_admins: str = (
         "Было создано новое обращение на платформе.\n"
-        "Ссылка на обращение: localhost:3000/admins/{unique_id}\n\n"
+        "Ссылка на обращение: ask.domofon-servis-odi.ru/admins/{unique_id}\n\n"
         "Базовая информация об обращении:\n"
         "{question_data}"
     )
 
     extra_message_created_notification_to_admins: str = (
         "Было отправлено новое дополнительное сообщение к обращению {question_id}.\n\n"
-        "Ознакомится по ссылке: localhost:3000/admins/{unique_id}\n\n"
+        "Ознакомится по ссылке: ask.domofon-servis-odi.ru/admins/{unique_id}\n\n"
         "Базовая информация о сообщении:\n"
         "{message_data}"
     )

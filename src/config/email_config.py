@@ -11,8 +11,8 @@ class EmailServiceConfig(BaseModel):
     port: int = 465
 
     # TODO Поменять!!!!!!!
-    url_to_personal_account: str = "http://localhost:3000/user/"
-    url_to_admin_account: str = "http://localhost:3000/admin/"
+    url_to_personal_account: str = "http://test.domofon-servis-odi.ru/user/"
+    url_to_admin_account: str = "http://test.domofon-servis-odi.ru/admin/"
 
     # retries_for_sending_messages: int = 3
 
