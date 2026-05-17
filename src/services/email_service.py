@@ -1,4 +1,5 @@
 import smtplib
+import asyncio
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -23,6 +24,20 @@ SEND_NOTIFICATION_WITH_TEXT_DELAY = settings.email.send_notification_with_text_d
 SEND_NOTIFICATION_WITH_TEXT_BACKOFF = settings.email.send_notification_with_text_backoff
 
 
+def _send_email_sync(fromaddr: str, toaddr: str, passw: str, msg: MIMEMultipart):
+    """Синхронная функция для отправки email"""
+    try:
+        server = smtplib.SMTP_SSL(settings.email.smtp, settings.email.port, timeout=10)
+        server.login(fromaddr, passw)
+        text = msg.as_string()
+        server.sendmail(fromaddr, toaddr, text)
+        server.quit()
+        print("Письмо успешно отправлено!")
+    except Exception as e:
+        print(f"Ошибка отправки email: {e}")
+        raise SendEmailError
+
+
 @retry(
     max_attempts=SEND_ANSWER_EMAIL_MOD_MAX_ATTEMPTS,
     delay=SEND_ANSWER_EMAIL_DELAY,
@@ -40,17 +55,7 @@ async def send_answer_email_mod(user_email: str, message: str):
     body = (f"{message}")
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-    try:
-        server = smtplib.SMTP_SSL(settings.email.smtp, settings.email.port)
-
-        server.login(fromaddr, passw)
-
-        text = msg.as_string()
-        server.sendmail(fromaddr, toaddr, text)
-        print("Письмо успешно отправлено!")
-
-    except Exception as e:
-        raise SendEmailError
+    await asyncio.to_thread(_send_email_sync, fromaddr, toaddr, passw, msg)
 
 
 # async def send_answer_email_autocreated_by_question_id(question_id: UUID):
@@ -100,17 +105,7 @@ async def send_auth_code(user_email: str, auth_code: str):
     )
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-    try:
-        server = smtplib.SMTP_SSL(settings.email.smtp, settings.email.port)
-
-        server.login(fromaddr, passw)
-
-        text = msg.as_string()
-        server.sendmail(fromaddr, toaddr, text)
-        print("Письмо успешно отправлено!")
-
-    except Exception as e:
-        raise SendEmailError
+    await asyncio.to_thread(_send_email_sync, fromaddr, toaddr, passw, msg)
 
 
 @retry(
@@ -129,13 +124,5 @@ async def send_notification_with_text(email: str, subject: str , message: str):
     msg["Subject"] = subject
     body = message
     msg.attach(MIMEText(body, "plain", "utf-8"))
-    try:
-        server = smtplib.SMTP_SSL(settings.email.smtp, settings.email.port)
-
-        server.login(fromaddr, passw)
-
-        text = msg.as_string()
-        server.sendmail(fromaddr, toaddr, text)
-
-    except Exception as e:
-        raise SendEmailError
+    
+    await asyncio.to_thread(_send_email_sync, fromaddr, toaddr, passw, msg)

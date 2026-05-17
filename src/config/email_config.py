@@ -17,15 +17,15 @@ class EmailServiceConfig(BaseModel):
     # retries_for_sending_messages: int = 3
 
     #retries configuration
-    send_answer_email_mod_retries: int = 3
-    send_answer_email_mod_delay: int = 3
-    send_answer_email_mod_backoff: int = 3
+    send_answer_email_mod_retries: int = 2
+    send_answer_email_mod_delay: int = 2
+    send_answer_email_mod_backoff: int = 2
 
-    send_auth_code_retries: int = 5
+    send_auth_code_retries: int = 2
     send_auth_code_delay: int = 1.0
     send_auth_code_backoff: int = 2.0
 
-    send_notification_with_text_retries: int = 3
+    send_notification_with_text_retries: int = 2
     send_notification_with_text_delay: float = 1.0
     send_notification_with_text_backoff: float = 2.0
 
