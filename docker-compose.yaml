@@ -91,6 +91,12 @@ services:
           memory: 384M
         reservations:
           memory: 128M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   frontend:
@@ -102,7 +108,8 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - app-network
     deploy:
