@@ -8,7 +8,7 @@ class EmailServiceConfig(BaseModel):
     from_address: str = os.getenv("MAIL_FROM_ADDRESS")
     password: str = os.getenv("MAIL_SERVICE_SECRET")
     smtp: str = "smtp.mail.ru"
-    port: int = 465
+    port: int = 587
 
     # TODO Поменять!!!!!!!
     url_to_personal_account: str = "http://test.domofon-servis-odi.ru/user/"
@@ -16,7 +16,6 @@ class EmailServiceConfig(BaseModel):
 
     # retries_for_sending_messages: int = 3
 
-    #retries configuration
     send_answer_email_mod_retries: int = 2
     send_answer_email_mod_delay: int = 2
     send_answer_email_mod_backoff: int = 2

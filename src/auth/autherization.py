@@ -38,15 +38,14 @@ async def get_auth_code(session: Annotated[AsyncSession, Depends(get_session)], 
     try:
         await send_auth_code(user_email=email.lower(), auth_code=code)
         logger.info(f"Email sent successfully to {email}")
+        return {"message": "Код отправлен на email", "email": email.lower()}
     except SendEmailError as e:
-        # Логируем ошибку, но возвращаем код для тестирования
+
         logger.error(f"Failed to send email to {email}: {e}")
-        # В production раскомментируйте следующие строки:
-        # raise HTTPException(
-        #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        #     detail="Произошла ошибка при отправке email с кодом для входа. Повторите попытку позже."
-        # )
-    return {"code": code, "message": "Код создан. Проверьте email или используйте код из ответа для тестирования."}
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Произошла ошибка при отправке email с кодом для входа. Повторите попытку позже."
+        )
 
 
 @router.post("/login")

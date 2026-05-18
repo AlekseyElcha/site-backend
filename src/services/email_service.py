@@ -27,7 +27,11 @@ SEND_NOTIFICATION_WITH_TEXT_BACKOFF = settings.email.send_notification_with_text
 def _send_email_sync(fromaddr: str, toaddr: str, passw: str, msg: MIMEMultipart):
     """Синхронная функция для отправки email"""
     try:
-        server = smtplib.SMTP_SSL(settings.email.smtp, settings.email.port, timeout=10)
+        # Используем SMTP с STARTTLS вместо SMTP_SSL
+        server = smtplib.SMTP(settings.email.smtp, settings.email.port, timeout=10)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
         server.login(fromaddr, passw)
         text = msg.as_string()
         server.sendmail(fromaddr, toaddr, text)
