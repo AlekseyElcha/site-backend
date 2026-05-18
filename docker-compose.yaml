@@ -85,6 +85,9 @@ services:
       - ./src:/app/src
     networks:
       - app-network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       resources:
         limits:

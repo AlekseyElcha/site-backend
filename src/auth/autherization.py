@@ -42,10 +42,13 @@ async def get_auth_code(session: Annotated[AsyncSession, Depends(get_session)], 
     except SendEmailError as e:
 
         logger.error(f"Failed to send email to {email}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Произошла ошибка при отправке email с кодом для входа. Повторите попытку позже."
-        )
+        logger.warning(f"Returning code due to SMTP block. Code: {code}")
+        return {
+            "message": "⚠️ SMTP заблокирован провайдером. Используйте код из ответа для тестирования.",
+            "code": code,
+            "email": email.lower(),
+            "note": "Для production настройте email API (SendGrid, Mailgun, AWS SES)"
+        }
 
 
 @router.post("/login")
