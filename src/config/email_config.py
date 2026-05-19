@@ -13,7 +13,7 @@ class EmailServiceConfig(BaseModel):
     port: int = 587
 
     # обход блокировки портов на VPS через "Resend"
-    resend_api_key = os.getenv("RESEND_API_KEY")
+    resend_api_key: str = os.getenv("RESEND_API_KEY")
 
     from_email: str = "ООО \"Домофон-сервис\" <noreply@domofon-servis-odi.ru>"
 
