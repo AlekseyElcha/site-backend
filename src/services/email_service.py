@@ -10,7 +10,6 @@ from sqlalchemy import except_all
 from src.config.settings import settings
 from exceptions import SendEmailError
 from src.decorators.retrying import retry
-from src.routers.questions.create_question import logger
 from src.services.email_service_v2 import send_email
 
 load_dotenv()
@@ -102,7 +101,6 @@ async def send_auth_code(user_email: str, auth_code: str):
             message=body,
         )
     except Exception as e:
-        logger.warning(e)
         raise SendEmailError
 
 # не работает
