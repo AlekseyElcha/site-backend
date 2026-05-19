@@ -38,6 +38,7 @@ class NewEmailVerificationCode(BaseModel):
     code: str
     creation: datetime
     expiration: datetime
+    was_used: bool = False
 
 
 class TokenInfo(BaseModel):
