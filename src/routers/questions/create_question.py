@@ -14,7 +14,7 @@ from src.auth.autherization import auth_user_check_self_info
 from src.config.settings import settings
 from src.services.email_service import send_notification_with_text
 from exceptions import SendEmailError
-
+from src.services.email_service_v2 import send_email
 
 logging.basicConfig(
     level=settings.logs.level,
@@ -72,12 +72,20 @@ async def create_question(
         )
     try:
         # TODO поменять ссылки здесь!!!
-        await send_notification_with_text(
-            email=question_data.email.lower(),
+        # await send_notification_with_text(
+        #     email=question_data.email.lower(),
+        #     subject="ООО «Домофон-сервис». Уведомление о создании обращения",
+        #     message=settings.business.format_message_text(
+        #         question_data.name, question_data.surname, unique_id
+        #     ),
+        # )
+        await send_email(
+            user_email=question_data.email.lower(),
             subject="ООО «Домофон-сервис». Уведомление о создании обращения",
             message=settings.business.format_message_text(
-                question_data.name, question_data.surname, unique_id
-            ),
+                    question_data.name, question_data.surname, unique_id
+                ),
+
         )
     except SendEmailError:
         # success = False
@@ -89,12 +97,19 @@ async def create_question(
                 .format(question_data.email)
             )
     try:
-        await send_notification_with_text(
-            email=settings.email.from_address.lower(),
+        # await send_notification_with_text(
+        #     email=settings.email.from_address.lower(),
+        #     subject="Уведомление о новом обращении на платформе",
+        #     message=settings.business.format_message_text_for_admins(
+        #         unique_id, question_data
+        #     )
+        # )
+        await send_email(
+            user_email=question_data.email.lower(),
             subject="Уведомление о новом обращении на платформе",
             message=settings.business.format_message_text_for_admins(
-                unique_id, question_data
-            )
+                    unique_id, question_data
+                )
         )
     except:
         # success = False
