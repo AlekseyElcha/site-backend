@@ -25,7 +25,6 @@ from src.models.models import Questions, Answers
 from src.redis.get_redis import get_redis
 from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import NewAnswerSchema, NewExtraMessageSchema
-from src.services.email_service import send_notification_with_text
 from src.services.token_service import check_admin, get_current_user
 
 logging.basicConfig(
@@ -156,14 +155,17 @@ async def answer_question(
                 detail="Ошибка при загрузке!"
             )
     try:
-        await send_notification_with_text(
-            email=user_email,
-            subject="ООО «Домофон-сервис». На Ваш вопрос поступил ответ.",
-            message=f"На Ваш вопрос {answer_data.question_id} поступил ответ.\n"
-                    f"Ознакомиться с ним Вы можете на нашей платформе по ссылке"
-                    f" {settings.email.url_to_personal_account}{answer_data.question_id}.\n\n"
-                    f"Данное сообщение было отправлено автоматически, просьба не отвечать на него."
-        )
+        a = 2*2
+        # await send_notification_with_text(
+        #     email=user_email,
+        #     subject="ООО «Домофон-сервис». На Ваш вопрос поступил ответ.",
+        #     message=f"На Ваш вопрос {answer_data.question_id} поступил ответ.\n"
+        #             f"Ознакомиться с ним Вы можете на нашей платформе по ссылке"
+        #             f" {settings.email.url_to_personal_account}{answer_data.question_id}.\n\n"
+        #             f"Данное сообщение было отправлено автоматически, просьба не отвечать на него."
+        # )
+        # await ...
+        # TODO Дописать !!!
     except:
         print("Ошибка при отправке нотификации user с ответом.")
     try:
@@ -219,13 +221,15 @@ async def add_extra_message_to_question(
                 detail=f"Ошибка при загрузке файлов: {str(e)}"
             )
     try:
-        await send_notification_with_text(
-            email=settings.email.from_address.lower(),
-            subject="Уведомление о новом сообщении",
-            message=settings.business.format_message_text_for_admins(
-                unique_id, message_data
-            )
-        )
+        # TODO Дописать !!!
+        b = 2 * 2
+        # await send_notification_with_text(
+        #     email=settings.email.from_address.lower(),
+        #     subject="Уведомление о новом сообщении",
+        #     message=settings.business.format_message_text_for_admins(
+        #         unique_id, message_data
+        #     )
+        # )
     except:
         logger.warning("Ошибка при отправке уведомления о создании нового доп. сообщения!")
     return {
