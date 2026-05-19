@@ -12,7 +12,6 @@ from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import UserSchema, NewQuestionSchema, UserAuthSchema
 from src.auth.autherization import auth_user_check_self_info
 from src.config.settings import settings
-from src.services.email_service import send_notification_with_text
 from exceptions import SendEmailError
 from src.services.email_service_v2 import send_email
 
