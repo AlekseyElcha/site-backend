@@ -25,6 +25,7 @@ from src.models.models import Questions, Answers
 from src.redis.get_redis import get_redis
 from src.s3.operations import upload_multiple_files
 from src.schemas.schemas import NewAnswerSchema, NewExtraMessageSchema
+from src.services.email_service_v2 import send_email
 from src.services.token_service import check_admin, get_current_user
 
 logging.basicConfig(
@@ -155,17 +156,14 @@ async def answer_question(
                 detail="Ошибка при загрузке!"
             )
     try:
-        a = 2*2
-        # await send_notification_with_text(
-        #     email=user_email,
-        #     subject="ООО «Домофон-сервис». На Ваш вопрос поступил ответ.",
-        #     message=f"На Ваш вопрос {answer_data.question_id} поступил ответ.\n"
-        #             f"Ознакомиться с ним Вы можете на нашей платформе по ссылке"
-        #             f" {settings.email.url_to_personal_account}{answer_data.question_id}.\n\n"
-        #             f"Данное сообщение было отправлено автоматически, просьба не отвечать на него."
-        # )
-        # await ...
-        # TODO Дописать !!!
+        await send_email(
+            email=user_email,
+            subject="ООО «Домофон-сервис». На Ваш вопрос поступил ответ.",
+            message=f"На Ваш вопрос {answer_data.question_id} поступил ответ.\n"
+                    f"Ознакомиться с ним Вы можете на нашей платформе по ссылке"
+                    f" {settings.email.url_to_personal_account}{answer_data.question_id}.\n\n"
+                    f"Данное сообщение было отправлено автоматически, просьба не отвечать на него."
+        )
     except:
         print("Ошибка при отправке нотификации user с ответом.")
     try:
