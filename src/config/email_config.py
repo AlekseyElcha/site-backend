@@ -12,7 +12,7 @@ class EmailServiceConfig(BaseModel):
     smtp: str = "smtp.mail.ru"
     port: int = 587
 
-    admin_emails_raw = os.getenv("MAIL_ADMINS", "")
+    admin_emails_raw: str = os.getenv("MAIL_ADMINS", "")
     admin_emails: list[str] = [
         email.strip() for email in admin_emails_raw.split(",") if email.strip()
     ]
