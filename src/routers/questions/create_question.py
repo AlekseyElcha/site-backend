@@ -103,6 +103,7 @@ async def create_question(
         #         unique_id, question_data
         #     )
         # )
+        print(settings.email.admin_emails)
         await send_email(
             user_email=settings.email.admin_emails,
             subject="Уведомление о новом обращении на платформе",
