@@ -5,7 +5,7 @@ from exceptions import SendEmailError
 from src.config.settings import settings
 
 
-async def send_email(user_email: str, subject: str, message: str):
+async def send_email(user_email: str | list, subject: str, message: str):
     async with aiohttp.ClientSession() as session:
         async with session.post(
             "https://api.resend.com/emails",

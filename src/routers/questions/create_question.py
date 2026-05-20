@@ -104,7 +104,7 @@ async def create_question(
         #     )
         # )
         await send_email(
-            user_email=question_data.email.lower(),
+            user_email=settings.email.admin_emails,
             subject="Уведомление о новом обращении на платформе",
             message=settings.business.format_message_text_for_admins(
                     unique_id, question_data

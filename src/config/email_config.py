@@ -12,6 +12,8 @@ class EmailServiceConfig(BaseModel):
     smtp: str = "smtp.mail.ru"
     port: int = 587
 
+    admin_emails: list[str] = os.getenv("MAIL_ADMINS").split(",")
+
     # обход блокировки портов на VPS через "Resend"
     resend_api_key: str = os.getenv("RESEND_API_KEY")
 
