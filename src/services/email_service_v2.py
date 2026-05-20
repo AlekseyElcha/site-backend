@@ -6,6 +6,7 @@ from src.config.settings import settings
 
 
 async def send_email(user_email: str | list, subject: str, message: str):
+    print(user_email)
     async with aiohttp.ClientSession() as session:
         async with session.post(
             "https://api.resend.com/emails",
