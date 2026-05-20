@@ -5,21 +5,25 @@ from exceptions import SendEmailError
 from src.config.settings import settings
 
 
-async def send_email(user_email: str | list, subject: str, message: str):
-    print(user_email)
+async def send_email(user_email: str | list[str], subject: str, message: str):
+    if isinstance(user_email, str):
+        recipients = [user_email]
+    else:
+        recipients = user_email
+
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            "https://api.resend.com/emails",
-            json={
-                "from": settings.email.from_email,
-                "to": [user_email],
-                "subject": subject,
-                "text": message,
-            },
-            headers={
-                "Authorization": f"Bearer {settings.email.resend_api_key}",
-                "Content-Type": "application/json",
-            },
+                "https://api.resend.com/emails",
+                json={
+                    "from": settings.email.from_email,
+                    "to": recipients,
+                    "subject": subject,
+                    "text": message,
+                },
+                headers={
+                    "Authorization": f"Bearer {settings.email.resend_api_key}",
+                    "Content-Type": "application/json",
+                },
         ) as response:
             data = await response.json()
 
