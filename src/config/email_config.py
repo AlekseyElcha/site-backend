@@ -12,13 +12,15 @@ class EmailServiceConfig(BaseModel):
     smtp: str = "smtp.mail.ru"
     port: int = 587
 
-    admin_emails: list[str] = os.getenv("MAIL_ADMINS").split(",")
+    admin_emails_raw = os.getenv("MAIL_ADMINS", "")
+    admin_emails: list[str] = [
+        email.strip() for email in admin_emails_raw.split(",") if email.strip()
+    ]
 
     # обход блокировки портов на VPS через "Resend"
     resend_api_key: str = os.getenv("RESEND_API_KEY")
 
     from_email: str = "ООО \"Домофон-сервис\" <noreply@domofon-servis-odi.ru>"
-
 
     # TODO Поменять!!!!!!!
     url_to_personal_account: str = "http://test.domofon-servis-odi.ru/user/"
