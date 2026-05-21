@@ -1,7 +1,7 @@
 import json
 import logging
 import uuid
-from typing import Annotated, Optional, List
+from typing import Annotated, Optional, List, Dict
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, Request
@@ -10,6 +10,7 @@ from sqlalchemy import select, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from exceptions import (GetAllQuestionsListError, CreateNewAnswerError, GetUserEmailByQuestionErrorInEmailSender,
                         UpdateQuestionStatusError, BasicOperationDatabaseError, GetUserEmailByQuestionError)
+from src.auth.autherization import auth_user_check_self_info
 from src.config.settings import settings
 from src.database.crud.questions import (
     get_all_questions_from_db,
@@ -43,7 +44,10 @@ router = APIRouter(
 redis_client = get_redis()
 
 @router.get("/all_questions")
-async def get_all_questions(session: Annotated[AsyncSession, Depends(get_session)]):
+async def get_all_questions(
+        session: Annotated[AsyncSession, Depends(get_session)],
+        current_user: Annotated[Dict[str, str], Depends(auth_user_check_self_info)],
+):
     try:
         data = await get_all_questions_from_db(session)
     except GetAllQuestionsListError:
@@ -55,7 +59,8 @@ async def get_all_questions(session: Annotated[AsyncSession, Depends(get_session
 
 @router.get("/answers_for_all_questions")
 async def get_all_answers_for_all_questions(
-        session: Annotated[AsyncSession, Depends(get_session)]
+        session: Annotated[AsyncSession, Depends(get_session)],
+        current_user: Annotated[Dict[str, str], Depends(auth_user_check_self_info)],
 ):
     try:
         data = await get_answers_for_questions(session=session)
@@ -70,7 +75,8 @@ async def get_all_answers_for_all_questions(
 @router.get("/answers_for_question/{question_id}")
 async def get_all_answers_for_all_questions(
         question_id: UUID,
-        session: Annotated[AsyncSession, Depends(get_session)]
+        session: Annotated[AsyncSession, Depends(get_session)],
+        current_user: Annotated[Dict[str, str], Depends(auth_user_check_self_info)],
 ):
     try:
         data = await get_answers_for_question_by_uuid(question_uuid=question_id, session=session)
@@ -189,6 +195,7 @@ async def add_extra_message_to_question(
         request: Request,
         question_id: Annotated[UUID, Body(embed=True)],
         message: Annotated[str, Body(embed=True)],
+        current_user: Annotated[Dict[str, str], Depends(auth_user_check_self_info)],
         files: Optional[List[UploadFile]] = File(default=None),
         session: AsyncSession = Depends(get_session),
 ):
@@ -239,6 +246,7 @@ async def add_extra_message_to_question(
 async def get_all_data_for_question(
         request: Request,
         question_id: str,
+        current_user: Annotated[Dict[str, str], Depends(auth_user_check_self_info)],
         session: AsyncSession = Depends(get_session),
 ):
     try:
@@ -260,6 +268,7 @@ async def get_all_data_for_question(
 @router.get("/question_filter")
 async def filter_questions(
     user_data: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[Dict[str, str], Depends(auth_user_check_self_info)],
     req: str = Query(None, min_length=1, max_length=100),
     session: AsyncSession = Depends(get_session),
 ):
