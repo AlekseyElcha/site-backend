@@ -56,7 +56,7 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-container">
-        <h1>Это тестовая страница! В скором времени сервис будет полноценно запущен!</h1>
+        <h1>Введите свою электронную почту для входа на сайт</h1>
         
         {error && <ErrorMessage message={error} onClose={() => setError(null)} />}
         
