@@ -13,7 +13,7 @@ from src.database.crud.auth_codes import (
 from src.database.crud.users import get_user_role_if_user_exists_else_create_new_user
 from src.database.db import get_session
 from src.schemas.schemas import UserAuthSchema
-from src.services.email_service import send_auth_code
+from src.services.email_service import send_email, send_auth_code
 from src.services.token_service import (
     create_access_token,
     decode_jwt, create_refresh_token,
@@ -35,18 +35,24 @@ router = APIRouter(
 @router.post("/get_auth_code")
 async def get_auth_code(session: Annotated[AsyncSession, Depends(get_session)], email: str = Form()):
     code = await generate_auth_code_and_and_to_db(email=email.lower(), session=session)
-    try:
-        await send_auth_code(user_email=email.lower(), auth_code=code)
-        logger.info(f"Email sent successfully to {email}")
-    except SendEmailError as e:
-        # Логируем ошибку, но возвращаем код для тестирования
-        logger.error(f"Failed to send email to {email}: {e}")
-        # В production раскомментируйте следующие строки:
-        # raise HTTPException(
-        #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        #     detail="Произошла ошибка при отправке email с кодом для входа. Повторите попытку позже."
-        # )
-    return {"code": code, "message": "Код создан. Проверьте email или используйте код из ответа для тестирования."}
+    # try:
+    # await send_auth_code(user_email=email.lower(), auth_code=code)
+    await send_auth_code(
+        user_email=email.lower(),
+        auth_code=code,
+    )
+    logger.info(f"Email sent successfully to {email}")
+    return {"message": "Код отправлен на email", "email": email.lower()}
+    # except SendEmailError as e:
+    #
+    #     logger.error(f"Failed to send email to {email}: {e}")
+    #     logger.warning(f"Returning code due to SMTP block. Code: {code}")
+    #     return {
+    #         "message": "SMTP заблокирован провайдером. Используйте код из ответа для тестирования.",
+    #         "code": code,
+    #         "email": email.lower(),
+    #         "note": "Для production настройте email API (SendGrid, Mailgun, AWS SES)"
+    #     }
 
 
 @router.post("/login")

@@ -1,13 +1,16 @@
 import smtplib
 import asyncio
+import aiohttp
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from dotenv import load_dotenv
+from sqlalchemy import except_all
+
 from src.config.settings import settings
 from exceptions import SendEmailError
 from src.decorators.retrying import retry
-
+from src.services.email_service_v2 import send_email
 
 load_dotenv()
 
@@ -24,20 +27,7 @@ SEND_NOTIFICATION_WITH_TEXT_DELAY = settings.email.send_notification_with_text_d
 SEND_NOTIFICATION_WITH_TEXT_BACKOFF = settings.email.send_notification_with_text_backoff
 
 
-def _send_email_sync(fromaddr: str, toaddr: str, passw: str, msg: MIMEMultipart):
-    """Синхронная функция для отправки email"""
-    try:
-        server = smtplib.SMTP_SSL(settings.email.smtp, settings.email.port, timeout=10)
-        server.login(fromaddr, passw)
-        text = msg.as_string()
-        server.sendmail(fromaddr, toaddr, text)
-        server.quit()
-        print("Письмо успешно отправлено!")
-    except Exception as e:
-        print(f"Ошибка отправки email: {e}")
-        raise SendEmailError
-
-
+# не работает на VPS!!!
 @retry(
     max_attempts=SEND_ANSWER_EMAIL_MOD_MAX_ATTEMPTS,
     delay=SEND_ANSWER_EMAIL_DELAY,
@@ -55,7 +45,7 @@ async def send_answer_email_mod(user_email: str, message: str):
     body = (f"{message}")
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-    await asyncio.to_thread(_send_email_sync, fromaddr, toaddr, passw, msg)
+    # await asyncio.to_thread(_send_email_sync, fromaddr, toaddr, passw, msg)
 
 
 # async def send_answer_email_autocreated_by_question_id(question_id: UUID):
@@ -85,44 +75,50 @@ async def send_answer_email_mod(user_email: str, message: str):
 
 
 @retry(
-    max_attempts=SEND_AUTH_CODE_MAX_ATTEMPTS,
-    delay=SEND_AUTH_CODE_DELAY,
-    backoff=SEND_AUTH_CODE_BACKOFF,
-)
-async def send_auth_code(user_email: str, auth_code: str):
-    fromaddr = settings.email.from_address
-    toaddr = f"{user_email}"
-    passw = settings.email.password
-
-    msg = MIMEMultipart()
-    msg['From'] = fromaddr
-    msg['To'] = toaddr
-    msg['Subject'] = settings.business.send_auth_code_subject
-
-    body = settings.business.format_auth_code_message(
-        auth_code,
-        settings.business.email_code_verification_timeout_minutes
-    )
-    msg.attach(MIMEText(body, 'plain', 'utf-8'))
-
-    await asyncio.to_thread(_send_email_sync, fromaddr, toaddr, passw, msg)
-
-
-@retry(
     max_attempts=SEND_NOTIFICATION_WITH_TEXT_MAX_ATTEMPTS,
     delay=SEND_NOTIFICATION_WITH_TEXT_DELAY,
     backoff=SEND_NOTIFICATION_WITH_TEXT_BACKOFF,
 )
-async def send_notification_with_text(email: str, subject: str , message: str):
-    fromaddr = settings.email.from_address
-    toaddr = email
-    passw = settings.email.password
+async def send_auth_code(user_email: str, auth_code: str):
+    # fromaddr = settings.email.from_address
+    toaddr = f"{user_email}"
+    # passw = settings.email.password
 
-    msg = MIMEMultipart()
-    msg["From"] = fromaddr
-    msg["To"] = toaddr
-    msg["Subject"] = subject
-    body = message
-    msg.attach(MIMEText(body, "plain", "utf-8"))
-    
-    await asyncio.to_thread(_send_email_sync, fromaddr, toaddr, passw, msg)
+    # msg = MIMEMultipart()
+    # msg['From'] = fromaddr
+    # msg['To'] = toaddr
+    # msg['Subject'] = settings.business.send_auth_code_subject
+    subject = settings.business.send_auth_code_subject
+    body = settings.business.format_auth_code_message(
+        auth_code,
+        settings.business.email_code_verification_timeout_minutes
+    )
+    # msg.attach(MIMEText(body, 'plain', 'utf-8'))
+    try:
+        await send_email(
+            user_email=toaddr,
+            subject=subject,
+            message=body,
+        )
+    except Exception as e:
+        raise SendEmailError
+
+# не работает
+# @retry(
+#     max_attempts=SEND_NOTIFICATION_WITH_TEXT_MAX_ATTEMPTS,
+#     delay=SEND_NOTIFICATION_WITH_TEXT_DELAY,
+#     backoff=SEND_NOTIFICATION_WITH_TEXT_BACKOFF,
+# )
+# async def send_notification_with_text(email: str, subject: str , message: str):
+#     fromaddr = settings.email.from_address
+#     toaddr = email
+#     passw = settings.email.password
+#
+#     msg = MIMEMultipart()
+#     msg["From"] = fromaddr
+#     msg["To"] = toaddr
+#     msg["Subject"] = subject
+#     body = message
+#     msg.attach(MIMEText(body, "plain", "utf-8"))
+#
+#     await ...
