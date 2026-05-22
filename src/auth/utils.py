@@ -17,8 +17,6 @@ async def validate_auth_user(
         user_data: UserAuthSchema,
         session: AsyncSession = Depends(get_session)
 ):
-    if user_data.auth_code == "111111":
-        return user_data
     user_email = str(user_data.email).lower()
     try:
         query = (select(EmailVerification)
