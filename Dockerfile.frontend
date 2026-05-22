@@ -13,6 +13,7 @@ RUN npm run build
 FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY public/src/maintainance.html /usr/share/nginx/html/maintainance.html
 
 EXPOSE 80
 
