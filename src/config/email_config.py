@@ -22,9 +22,8 @@ class EmailServiceConfig(BaseModel):
 
     from_email: str = "ООО \"Домофон-сервис\" <noreply@domofon-servis-odi.ru>"
 
-    # TODO Поменять!!!!!!!
-    url_to_personal_account: str = "http://test.domofon-servis-odi.ru/user/"
-    url_to_admin_account: str = "http://test.domofon-servis-odi.ru/admin/"
+    url_to_personal_account: str = "http://ask.domofon-servis-odi.ru/user/"
+    url_to_admin_account: str = "http://ask.domofon-servis-odi.ru/admin/"
 
     # retries_for_sending_messages: int = 3
 
