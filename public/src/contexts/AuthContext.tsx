@@ -17,14 +17,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false)
   const navigate = useNavigate()
 
   const isAuthenticated = user !== null
 
   // Проверка аутентификации при загрузке
   const checkAuth = useCallback(async () => {
+    // Предотвращаем параллельные вызовы
+    if (isCheckingAuth) {
+      console.log('checkAuth уже выполняется, пропускаем...')
+      return
+    }
+    
     try {
+      setIsCheckingAuth(true)
       setIsLoading(true)
+      
+      console.log('Проверяем аутентификацию...')
       
       // Пробуем получить информацию о пользователе с retry
       let userInfo: UserInfo | null = null
@@ -33,13 +43,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
           userInfo = await apiService.getUserInfo()
+          console.log('Получена информация о пользователе:', userInfo)
           break // Успешно получили данные
         } catch (error) {
           lastError = error as Error
           console.error(`Попытка ${attempt + 1}/3 получить user_info не удалась:`, error)
           
           // Если это 401/403 - не пытаемся повторно
-          if (error instanceof Error && error.message.includes('401')) {
+          if (error instanceof Error && (error.message.includes('401') || error.message.includes('403'))) {
             break
           }
           
@@ -59,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Перенаправление по роли только если не на странице входа
       const currentPath = window.location.pathname
       if (currentPath === '/') {
+        console.log('Перенаправляем пользователя по роли:', userInfo.role)
         if (userInfo.role === 'admin') {
           navigate('/admin', { replace: true })
         } else {
@@ -75,8 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } finally {
       setIsLoading(false)
+      setIsCheckingAuth(false)
     }
-  }, [navigate])
+  }, [navigate, isCheckingAuth])
 
   // Вход в систему
   const login = useCallback(async (email: string, code: string) => {
