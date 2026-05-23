@@ -56,6 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiService.login(email, code)
       // После успешного логина сразу получаем информацию о пользователе
       const userInfo = await apiService.getUserInfo()
+      
+      // Проверяем что role валидный
+      if (!userInfo.role || (userInfo.role !== 'user' && userInfo.role !== 'admin')) {
+        console.error('Невалидная роль пользователя:', userInfo.role)
+        throw new Error('Ошибка: роль пользователя не определена. Обратитесь к администратору.')
+      }
+      
       setUser(userInfo)
       
       // Перенаправляем по роли

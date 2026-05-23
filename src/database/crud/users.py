@@ -28,6 +28,6 @@ async def create_new_user(user: UserAddSchema, session: AsyncSession):
     try:
         await session.commit()
         await session.refresh(new_user)
-        return user.role
+        return "user"
     except:
         raise BasicOperationDatabaseError
