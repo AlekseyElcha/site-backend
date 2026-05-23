@@ -13,6 +13,7 @@ async def get_user_role_if_user_exists_else_create_new_user(user_email: str, ses
         data = res.scalars().first()
         if not data:
             await create_new_user(user=UserAddSchema(email=user_email.lower(), role="user"), session=session)
+            return "user"
         else:
             return data.role
     except:
@@ -28,6 +29,6 @@ async def create_new_user(user: UserAddSchema, session: AsyncSession):
     try:
         await session.commit()
         await session.refresh(new_user)
-        return user.role
+        return "user"
     except:
         raise BasicOperationDatabaseError
