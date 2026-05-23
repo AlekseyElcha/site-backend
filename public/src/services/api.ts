@@ -22,7 +22,14 @@ class APIService {
     }
     
     try {
-      const data = await response.json()
+      const text = await response.text()
+      console.log('Response text:', text.substring(0, 200)) // Логируем первые 200 символов
+      
+      if (!text) {
+        throw new Error('Пустой ответ от сервера')
+      }
+      
+      const data = JSON.parse(text)
       return data
     } catch (error) {
       console.error('JSON Parse Error:', error)
