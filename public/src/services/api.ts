@@ -65,7 +65,13 @@ class APIService {
   async getUserInfo(): Promise<UserInfo> {
     const response = await fetch(`${this.baseURL}/auth/user_info`, {
       method: 'GET',
-      credentials: 'include'
+      credentials: 'include',
+      cache: 'no-store', // Отключаем кэш
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     })
     return this.handleResponse<UserInfo>(response)
   }
