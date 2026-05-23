@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine  # alpine-образ легче
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: questions
       POSTGRES_USER: postgres
