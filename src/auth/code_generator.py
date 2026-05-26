@@ -16,7 +16,7 @@ mins = settings.business.email_code_verification_timeout_minutes
 
 async def generate_auth_code_and_and_to_db(email: str, session: AsyncSession):
     now_unix_str = str(datetime.timestamp(datetime.utcnow()))
-    first_part = "".join(choice(nums) for i in range(3))
+    first_part = "".join(choice(nums) for _ in range(3))
     second_part = now_unix_str[-3:]
     code = first_part + second_part
     now = datetime.utcnow()
@@ -31,3 +31,7 @@ async def generate_auth_code_and_and_to_db(email: str, session: AsyncSession):
     except AddNewEmailVerificationCodeToDBError:
         raise CreateNewEmailVerificationCodeError
     return code
+
+
+def generate_code(length: int):
+    return "".join(choice(nums) for _ in range(length))

@@ -4,7 +4,8 @@ from fastapi import APIRouter, Form, HTTPException, status, Depends, Response, R
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions import BasicOperationDatabaseError, SendEmailError
-from src.auth.code_generator import generate_auth_code_and_and_to_db
+from src.auth.auth_codes_redis import add_auth_code_to_redis
+from src.auth.code_generator import generate_auth_code_and_and_to_db, generate_code
 from src.auth.utils import validate_auth_user, get_current_auth_user_for_refresh
 from src.config.settings import settings
 from src.database.crud.auth_codes import (
@@ -34,25 +35,27 @@ router = APIRouter(
 
 @router.post("/get_auth_code")
 async def get_auth_code(session: Annotated[AsyncSession, Depends(get_session)], email: str = Form()):
-    code = await generate_auth_code_and_and_to_db(email=email.lower(), session=session)
-    # try:
-    # await send_auth_code(user_email=email.lower(), auth_code=code)
+
+    # версия с использованием базы данных
+    # code = await generate_auth_code_and_and_to_db(email=email.lower(), session=session)
+
+    # версия с использованием Redis
+    code = generate_code(length=6)
+
+    try:
+        await add_auth_code_to_redis(
+            email=email,
+            auth_code=code,
+        )
+    except:
+        ...
+
     await send_auth_code(
         user_email=email.lower(),
         auth_code=code,
     )
     logger.info(f"Email sent successfully to {email}")
     return {"message": "Код отправлен на email", "email": email.lower()}
-    # except SendEmailError as e:
-    #
-    #     logger.error(f"Failed to send email to {email}: {e}")
-    #     logger.warning(f"Returning code due to SMTP block. Code: {code}")
-    #     return {
-    #         "message": "SMTP заблокирован провайдером. Используйте код из ответа для тестирования.",
-    #         "code": code,
-    #         "email": email.lower(),
-    #         "note": "Для production настройте email API (SendGrid, Mailgun, AWS SES)"
-    #     }
 
 
 @router.post("/login")
@@ -83,14 +86,17 @@ async def login(
     access_token = create_access_token(user_data.email, user_role)
     refresh_token = create_refresh_token(user_data.email, user_role)
 
-    # TODO добавить параметры работы (httponly, samesite, secure)
     response.set_cookie(
         key=settings.auth_jwt.access_cookie_name,
+        httponly=True,
+        secure=True,
         value=access_token,
     )
     response.set_cookie(
         key=settings.auth_jwt.refresh_cookie_name,
-        value=refresh_token
+        httponly=True,
+        secure=True,
+        value=refresh_token,
     )
 
     return {

@@ -72,3 +72,7 @@ class CreateNewExtraMessageError(QuestionsBaseException):
 
 class ChangeQuestionStatusError(QuestionsBaseException):
     pass
+
+
+class RedisOpsBasicException(QuestionsBaseException):
+    pass
